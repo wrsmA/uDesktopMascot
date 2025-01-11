@@ -1,7 +1,9 @@
-# UnityTemplateRepository
-Unity Project template Repository
+# Desktop Mascot
 
-# Demo
+[Desktop Mascot]()のOSS版
+
+## Features
+* 
 
 # requirements
-* Unity 2022.2.0f1
+* Unity 6000.0.0f31
