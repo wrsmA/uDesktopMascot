@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UniGLTF;
 using VRM;
@@ -10,17 +12,26 @@ namespace uDesktopMascot
     /// <summary>
     /// VRMファイルを読み込む
     /// </summary>
-    public class LoadVRM : MonoBehaviour
+    public static class LoadVRM
     {
         /// <summary>
         /// デフォルトのVRMファイル名
         /// </summary>
         private const string DefaultVrmFileName = "test.vrm";
+        
+        /// <summary>
+        /// アニメーションコントローラーを設定
+        /// </summary>
+        /// <param name="animator"></param>
+        public static void UpdateAnimationController(Animator animator)
+        {
+            animator.runtimeAnimatorController = Resources.Load<RuntimeAnimatorController>("CharacterAnimationController");
+        }
 
         /// <summary>
-        /// Start
+        /// LoadModel
         /// </summary>
-        private async void Start()
+        public static async UniTask<GameObject> LoadModel(CancellationToken cancellationToken)
         {
             try
             {
@@ -50,13 +61,13 @@ namespace uDesktopMascot
                 if (!File.Exists(path))
                 {
                     Debug.LogError($"VRMファイルが見つかりません: {path}");
-                    return;
+                    return null;
                 }
 
                 try
                 {
                     // VRMファイルをロードしてモデルを表示
-                    await LoadAndDisplayModel(path);
+                    return await LoadAndDisplayModel(path, cancellationToken);
                 }
                 catch (Exception e)
                 {
@@ -68,7 +79,7 @@ namespace uDesktopMascot
                         Debug.LogWarning("デフォルトのモデルを読み込みます。");
                         try
                         {
-                            await LoadAndDisplayModel(defaultVrmPath);
+                            await LoadAndDisplayModel(defaultVrmPath, cancellationToken);
                         }
                         catch (Exception ex)
                         {
@@ -79,17 +90,21 @@ namespace uDesktopMascot
             } catch (Exception e)
             {
                 Debug.LogError($"VRMの読み込みまたは表示中にエラーが発生しました: {e.Message}");
+                return null;
             }
+            
+            return null;
         }
 
         /// <summary>
         /// VRMファイルを読み込み、モデルを表示する
         /// </summary>
         /// <param name="path">VRMファイルのパス</param>
-        private async Task LoadAndDisplayModel(string path)
+        /// <param name="cancellationToken"></param>
+        private static async UniTask<GameObject> LoadAndDisplayModel(string path,CancellationToken cancellationToken)
         {
             // VRMファイルをバイト配列として非同期で読み込み
-            var bytes = await File.ReadAllBytesAsync(path);
+            var bytes = await File.ReadAllBytesAsync(path, cancellationToken);
 
             // VRMファイルをパースしてGltfDataを取得
             var parsed = new GlbLowLevelParser(path, bytes).Parse();
@@ -119,13 +134,15 @@ namespace uDesktopMascot
             EnableAllRenderers(model);
 
             Debug.Log($"モデルのロードと表示が完了しました: {path}");
+
+            return model;
         }
 
         /// <summary>
         /// モデル内の全てのRendererコンポーネントを有効化する
         /// </summary>
         /// <param name="model">モデルのGameObject</param>
-        private void EnableAllRenderers(GameObject model)
+        private static void EnableAllRenderers(GameObject model)
         {
             // SkinnedMeshRendererを有効化
             var skinnedMeshRenderers = model.GetComponentsInChildren<SkinnedMeshRenderer>(true);
