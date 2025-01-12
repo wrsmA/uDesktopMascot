@@ -464,19 +464,19 @@ MonoBehaviour:
   m_MoveRepeatDelay: 0.5
   m_MoveRepeatRate: 0.1
   m_XRTrackingOrigin: {fileID: 0}
-  m_ActionsAsset: {fileID: -944628639613478452, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_PointAction: {fileID: -1654692200621890270, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_MoveAction: {fileID: -8784545083839296357, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_SubmitAction: {fileID: 392368643174621059, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_CancelAction: {fileID: 7727032971491509709, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_LeftClickAction: {fileID: 3001919216989983466, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_MiddleClickAction: {fileID: -2185481485913320682, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_RightClickAction: {fileID: -4090225696740746782, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_ScrollWheelAction: {fileID: 6240969308177333660, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_TrackedDevicePositionAction: {fileID: 6564999863303420839, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_TrackedDeviceOrientationAction: {fileID: 7970375526676320489, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_ActionsAsset: {fileID: -944628639613478452, guid: a44af2b5a23d08f4592b3b54055c29f3, type: 3}
+  m_PointAction: {fileID: -1654692200621890270, guid: a44af2b5a23d08f4592b3b54055c29f3, type: 3}
+  m_MoveAction: {fileID: -8784545083839296357, guid: a44af2b5a23d08f4592b3b54055c29f3, type: 3}
+  m_SubmitAction: {fileID: 392368643174621059, guid: a44af2b5a23d08f4592b3b54055c29f3, type: 3}
+  m_CancelAction: {fileID: 7727032971491509709, guid: a44af2b5a23d08f4592b3b54055c29f3, type: 3}
+  m_LeftClickAction: {fileID: 3001919216989983466, guid: a44af2b5a23d08f4592b3b54055c29f3, type: 3}
+  m_MiddleClickAction: {fileID: -2185481485913320682, guid: a44af2b5a23d08f4592b3b54055c29f3, type: 3}
+  m_RightClickAction: {fileID: -4090225696740746782, guid: a44af2b5a23d08f4592b3b54055c29f3, type: 3}
+  m_ScrollWheelAction: {fileID: 6240969308177333660, guid: a44af2b5a23d08f4592b3b54055c29f3, type: 3}
+  m_TrackedDevicePositionAction: {fileID: 6564999863303420839, guid: a44af2b5a23d08f4592b3b54055c29f3, type: 3}
+  m_TrackedDeviceOrientationAction: {fileID: 7970375526676320489, guid: a44af2b5a23d08f4592b3b54055c29f3, type: 3}
   m_DeselectOnBackgroundClick: 1
-  m_PointerBehavior: 0
+  m_PointerBehavior: 2
   m_CursorLockBehavior: 0
   m_ScrollDeltaPerTick: 6
 --- !u!114 &1380617796
@@ -518,7 +518,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1510895036}
-  - component: {fileID: 1510895037}
+  - component: {fileID: 1510895039}
   m_Layer: 0
   m_Name: VRMLoader
   m_TagString: Untagged
@@ -541,7 +541,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1510895037
+--- !u!114 &1510895039
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -550,7 +550,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1510895035}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8029f4ec4266426aab02b7e0fd8e6a37, type: 3}
+  m_Script: {fileID: 11500000, guid: 6f404c24d6ee45479cc4df2fd470e498, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1795136567
