@@ -1,18 +1,18 @@
 {
   "dependencies": {
+    "com.ayutaz.uniwinc": {
+      "version": "https://github.com/ayutaz/UniWindowController.git#upm",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "e33baf14536c5d8d6c0187375487d2ffa35f0fdd"
+    },
     "com.hecomi.udesktopduplication": {
       "version": "https://github.com/hecomi/uDesktopDuplication.git#upm",
       "depth": 0,
       "source": "git",
       "dependencies": {},
       "hash": "4619d21fb5379aa486e44bafebcc6f3bf4f26b7f"
-    },
-    "com.kirurobo.uniwinc": {
-      "version": "https://github.com/kirurobo/UniWindowController.git#upm",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "185dd1b2e73f7ba0708b9532668133bb97908ed1"
     },
     "com.unity.2d.animation": {
       "version": "10.1.4",
