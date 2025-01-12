@@ -1,9 +1,10 @@
-# uDesktop-Mascot
+# uDesktopMascot
 
-[Desktop Mascot]()のOSS版
+## Description
+デスクトップマスコットのOpen Projectです。
 
 ## Features
 * 
 
 # requirements
-* Unity 6000.0.0f31
+* Unity 6000.0.31f1
