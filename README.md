@@ -1,6 +1,7 @@
-# uDesktop-Mascot
+# uDesktopMascot
 
-[Desktop Mascot]()のOSS版
+## Description
+デスクトップマスコットのOpen Projectです。
 
 ## Features
 * 
