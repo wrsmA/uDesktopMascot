@@ -4,8 +4,20 @@ on:
   push:
     tags:
       - 'v*'
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
 jobs:
   build:
+    if: |
+      github.event.pull_request.base.ref == 'main' &&
+      (
+        github.event.pull_request.head.ref == 'develop' ||
+        startsWith(github.event.pull_request.head.ref, 'feat/') ||
+        startsWith(github.event.pull_request.head.ref, 'fix/')
+      )
     name: Run builds for Windows, Mac, and Linux
     strategy:
       fail-fast: false
