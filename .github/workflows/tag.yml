@@ -1,0 +1,44 @@
+﻿name: Create Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'タグ名を「v数字.数字.数字」の形式で入力してください（例：v1.0.0）'
+        required: true
+
+jobs:
+  create_tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4.2.2
+        with:
+          ref: main
+
+      - name: タグ名の検証
+        id: validate_tag
+        run: |
+          TAG_NAME="${{ github.event.inputs.tag_name }}"
+          if [[ ! "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "エラー: タグ名が有効な形式ではありません。v数字.数字.数字 の形式で入力してください。"
+            exit 1
+          fi
+
+      - name: タグが既に存在しないか確認
+        run: |
+          TAG_NAME="${{ github.event.inputs.tag_name }}"
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "エラー: タグ '$TAG_NAME' は既に存在します。"
+            exit 1
+          fi
+
+      - name: タグを作成してプッシュ
+        env:
+          TAG_NAME: ${{ github.event.inputs.tag_name }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
