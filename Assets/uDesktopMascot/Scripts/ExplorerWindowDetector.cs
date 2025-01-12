@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace uDesktopMascot
@@ -16,9 +17,40 @@ namespace uDesktopMascot
     /// <summary>
     /// エクスプローラーウィンドウを検出するクラス
     /// </summary>
-    public class ExplorerWindowDetector
+    public static class ExplorerWindowDetector
     {
-        public List<ExplorerWindowInfo> GetExplorerWindows()
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetDC(IntPtr hWnd);
+
+        [DllImport("gdi32.dll")]
+        private static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
+
+        /// <summary>
+        /// ロジックスピクセルのX方向の値
+        /// </summary>
+        private const int LOGPIXELSX = 88;
+        
+        /// <summary>
+        /// ロジックスピクセルのY方向の値
+        /// </summary>
+        private const int LOGPIXELSY = 90;
+
+        /// <summary>
+        /// DPIスケールを取得
+        /// </summary>
+        /// <returns></returns>
+        public static float GetDPIScale()
+        {
+            IntPtr hdc = GetDC(IntPtr.Zero);
+            int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
+            int dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
+
+            float dpiScaleX = dpiX / 96.0f;
+            float dpiScaleY = dpiY / 96.0f;
+
+            return (dpiScaleX + dpiScaleY) / 2.0f;
+        }
+        public static List<ExplorerWindowInfo> GetExplorerWindows()
         {
             List<ExplorerWindowInfo> explorerWindows = new List<ExplorerWindowInfo>();
         

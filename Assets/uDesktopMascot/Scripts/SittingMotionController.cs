@@ -12,11 +12,6 @@ namespace uDesktopMascot
     public class SittingMotionController : MonoBehaviour
     {
         private static readonly int IsSitting = Animator.StringToHash("IsSitting");
-
-        /// <summary>
-        /// エクスプローラーウィンドウの検出クラス
-        /// </summary>
-        private ExplorerWindowDetector _windowDetector;
         
         /// <summary>
         /// モデルのアニメーター
@@ -45,7 +40,6 @@ namespace uDesktopMascot
 
         private void Awake()
         {
-            _windowDetector = new ExplorerWindowDetector();
             _mainCamera = Camera.main;
             _cancellationTokenSource = new CancellationTokenSource();
         }
@@ -77,7 +71,7 @@ namespace uDesktopMascot
             Vector2 modelScreenPos = Utility.GetModelScreenPosition(_mainCamera, _model.transform);
 
             // エクスプローラーウィンドウの位置を取得
-            var explorerWindows = _windowDetector.GetExplorerWindows();
+            var explorerWindows = ExplorerWindowDetector.GetExplorerWindows();
 
             bool isNearExplorerTop = false;
 
@@ -87,7 +81,7 @@ namespace uDesktopMascot
                 var rect = window.rect;
 
                 // DPIスケールを取得
-                float dpiScale = GetDPIScale();
+                float dpiScale = ExplorerWindowDetector.GetDPIScale();
 
                 // ウィンドウの座標をDPIスケールで割る
                 rect.left = (int)(rect.left / dpiScale);
@@ -115,31 +109,6 @@ namespace uDesktopMascot
         {
             _cancellationTokenSource?.Cancel();
             _cancellationTokenSource?.Dispose();
-        }
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetDC(IntPtr hWnd);
-
-        [DllImport("gdi32.dll")]
-        private static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
-
-        private const int LOGPIXELSX = 88;
-        private const int LOGPIXELSY = 90;
-
-        /// <summary>
-        /// DPIスケールを取得
-        /// </summary>
-        /// <returns></returns>
-        private static float GetDPIScale()
-        {
-            IntPtr hdc = GetDC(IntPtr.Zero);
-            int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
-            int dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
-
-            float dpiScaleX = dpiX / 96.0f;
-            float dpiScaleY = dpiY / 96.0f;
-
-            return (dpiScaleX + dpiScaleY) / 2.0f;
         }
     }
 }
