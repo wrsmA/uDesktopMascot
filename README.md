@@ -1,4 +1,4 @@
-# Desktop Mascot
+# uDesktop-Mascot
 
 [Desktop Mascot]()のOSS版
 
