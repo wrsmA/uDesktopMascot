@@ -7,6 +7,13 @@
       "dependencies": {},
       "hash": "e33baf14536c5d8d6c0187375487d2ffa35f0fdd"
     },
+    "com.cysharp.unitask": {
+      "version": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "8042b29ff87dd5506d7aad72bd6d8d7405985f27"
+    },
     "com.hecomi.udesktopduplication": {
       "version": "https://github.com/hecomi/uDesktopDuplication.git#upm",
       "depth": 0,
@@ -382,6 +389,34 @@
         "com.unity.modules.jsonserialize": "1.0.0"
       },
       "url": "https://packages.unity.com"
+    },
+    "com.vrmc.gltf": {
+      "version": "https://github.com/vrm-c/UniVRM.git?path=/Assets/UniGLTF#v0.128.1",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.modules.animation": "1.0.0"
+      },
+      "hash": "2911cb72a905ab7d8b0f9e03397235d1c0293714"
+    },
+    "com.vrmc.univrm": {
+      "version": "https://github.com/vrm-c/UniVRM.git?path=/Assets/VRM#v0.128.1",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.vrmc.gltf": "0.128.1",
+        "com.unity.ugui": "1.0.0"
+      },
+      "hash": "2911cb72a905ab7d8b0f9e03397235d1c0293714"
+    },
+    "com.vrmc.vrm": {
+      "version": "https://github.com/vrm-c/UniVRM.git?path=/Assets/VRM10#v0.128.1",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.vrmc.gltf": "0.128.1"
+      },
+      "hash": "2911cb72a905ab7d8b0f9e03397235d1c0293714"
     },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",
