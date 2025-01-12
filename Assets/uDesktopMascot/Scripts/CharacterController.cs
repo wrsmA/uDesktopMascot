@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -102,7 +103,7 @@ namespace uDesktopMascot
                 AddCollidersToModel();
 
                 _isInitialized = true;
-            } catch (System.Exception e)
+            } catch (Exception e)
             {
                 Debug.LogError($"モデルの初期化中にエラーが発生しました: {e.Message}");
             }
@@ -116,7 +117,7 @@ namespace uDesktopMascot
             }
 
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-            
+
             // モデルのスクリーン座標を取得
             Vector2 modelScreenPos = Utility.GetModelScreenPosition(_mainCamera, _model.transform);
 
@@ -161,7 +162,7 @@ namespace uDesktopMascot
             {
                 _modelAnimator.SetBool(IsDragging, false);
                 // 座りモーションまたは立ちモーションに切り替え
-                _modelAnimator.SetBool(IsSitting, isNearExplorerTop);
+                _modelAnimator.SetBool(IsSitting, false);
             }
         }
 
