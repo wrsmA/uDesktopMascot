@@ -115,6 +115,8 @@ namespace uDesktopMascot
                 return;
             }
 
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+            
             // モデルのスクリーン座標を取得
             Vector2 modelScreenPos = Utility.GetModelScreenPosition(_mainCamera, _model.transform);
 
@@ -147,6 +149,7 @@ namespace uDesktopMascot
                     }
                 }
             }
+#endif
 
             // モーションを切り替える
             if (_isDragging && _isDraggingModel)
@@ -199,7 +202,6 @@ namespace uDesktopMascot
         {
             _isDragging = false;
             _isDraggingModel = false;
-            Debug.Log("ドラッグ終了");
         }
 
         /// <summary>
