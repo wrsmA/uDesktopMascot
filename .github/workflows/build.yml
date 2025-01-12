@@ -34,7 +34,7 @@ jobs:
 
       # LFSファイルのキャッシュを取得する
       - name: Restore LFS cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4.2.0
         id: lfs-cache
         with:
           path: .git/lfs
@@ -53,7 +53,7 @@ jobs:
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       # Cache
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4.2.0
         with:
           path: Library
           key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
@@ -62,7 +62,7 @@ jobs:
 
       # Unityプロジェクトのビルド
       - name: Run the build for ${{ matrix.targetPlatform }}
-        uses: game-ci/unity-builder@v4
+        uses: game-ci/unity-builder@v4.3.0
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
@@ -73,7 +73,7 @@ jobs:
 
       # 成果物をZIPにしてアップロードする
       - name: Upload the Build for ${{ matrix.targetPlatform }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.6.0
         with:
           name: Build-${{ matrix.targetPlatform }}-${{ steps.vars.outputs.sha_short }}
           path: build
