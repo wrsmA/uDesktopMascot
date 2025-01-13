@@ -4,6 +4,11 @@ on:
   push:
     tags:
       - 'v*'
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
 jobs:
   build:
     name: Run builds for Windows, Mac, and Linux
@@ -14,25 +19,25 @@ jobs:
           - StandaloneWindows64
           - StandaloneOSX
           - StandaloneLinux64
-        # Unityのバージョンをここで指定します
         unityVersion: ['6000.0.31f1']
         include:
           - targetPlatform: StandaloneWindows64
-            runsOn: ubuntu-latest
-          - targetPlatform: StandaloneLinux64
-            runsOn: ubuntu-latest
+            runsOn: windows-latest
+            modules: windows-il2cpp
           - targetPlatform: StandaloneOSX
             runsOn: macos-latest
+            modules: mac-il2cpp
+          - targetPlatform: StandaloneLinux64
+            runsOn: ubuntu-latest
+            modules: linux-il2cpp
     runs-on: ${{ matrix.runsOn }}
     steps:
-      # リポジトリのチェックアウト
       - name: Check out my unity project.
         uses: actions/checkout@v4.2.2
 
       - name: Create LFS file list
         run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
 
-      # LFSファイルのキャッシュを取得する
       - name: Restore LFS cache
         uses: actions/cache@v4.2.0
         id: lfs-cache
@@ -40,19 +45,16 @@ jobs:
           path: .git/lfs
           key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}
 
-      # LFSファイルをPullする
       - name: Git LFS Pull
         run: |
           git lfs pull
           git add .
           git reset --hard
 
-      # ファイル名にgitのハッシュを含めたいので$GITHUB_OUTPUTに保存しておく
       - name: Set outputs
         id: vars
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      # Cache
       - uses: actions/cache@v4.2.0
         with:
           path: Library
@@ -60,7 +62,6 @@ jobs:
           restore-keys: |
             Library-
 
-      # Unityプロジェクトのビルド
       - name: Run the build for ${{ matrix.targetPlatform }}
         uses: game-ci/unity-builder@v4.3.0
         env:
@@ -71,7 +72,6 @@ jobs:
           targetPlatform: ${{ matrix.targetPlatform }}
           unityVersion: ${{ matrix.unityVersion }}
 
-      # 成果物をZIPにしてアップロードする
       - name: Upload the Build for ${{ matrix.targetPlatform }}
         uses: actions/upload-artifact@v4.6.0
         with:

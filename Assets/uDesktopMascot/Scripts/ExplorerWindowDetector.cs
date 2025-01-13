@@ -1,7 +1,11 @@
-﻿using System;
+﻿#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using AOT;
+
+// 追加
 
 namespace uDesktopMascot
 {
@@ -29,7 +33,7 @@ namespace uDesktopMascot
         /// ロジックスピクセルのX方向の値
         /// </summary>
         private const int LOGPIXELSX = 88;
-        
+
         /// <summary>
         /// ロジックスピクセルのY方向の値
         /// </summary>
@@ -50,37 +54,59 @@ namespace uDesktopMascot
 
             return (dpiScaleX + dpiScaleY) / 2.0f;
         }
+
         public static List<ExplorerWindowInfo> GetExplorerWindows()
         {
             List<ExplorerWindowInfo> explorerWindows = new List<ExplorerWindowInfo>();
-        
-            WindowsAPI.EnumWindows(delegate(IntPtr hWnd, IntPtr lParam)
+
+            // explorerWindows リストを GCHandle で固定
+            var handle = GCHandle.Alloc(explorerWindows);
+            try
+            {
+                // 静的なコールバックメソッドを使用し、lParam に GCHandle のポインタを渡す
+                WindowsAPI.EnumWindows(EnumWindowsCallback, GCHandle.ToIntPtr(handle));
+            } finally
+            {
+                // GCHandle を解放
+                handle.Free();
+            }
+
+            return explorerWindows;
+        }
+
+        // MonoPInvokeCallback 属性を追加
+        [MonoPInvokeCallback(typeof(WindowsAPI.EnumWindowsProc))]
+        private static bool EnumWindowsCallback(IntPtr hWnd, IntPtr lParam)
+        {
+            // lParam から explorerWindows リストを取得
+            var handle = GCHandle.FromIntPtr(lParam);
+            if (handle.Target is List<ExplorerWindowInfo> explorerWindows)
             {
                 if (WindowsAPI.IsWindowVisible(hWnd))
                 {
                     StringBuilder className = new StringBuilder(256);
                     WindowsAPI.GetClassName(hWnd, className, className.Capacity);
-                
+
                     // エクスプローラーウィンドウのクラス名は "CabinetWClass" または "ExploreWClass"
-                    if (className.ToString() == "CabinetWClass" || className.ToString() == "ExploreWClass")
+                    var classNameStr = className.ToString();
+                    if (classNameStr == "CabinetWClass" || classNameStr == "ExploreWClass")
                     {
-                        WindowsAPI.RECT rect;
-                        if (WindowsAPI.GetWindowRect(hWnd, out rect))
+                        if (WindowsAPI.GetWindowRect(hWnd, out var rect))
                         {
                             ExplorerWindowInfo info = new ExplorerWindowInfo
                             {
                                 hWnd = hWnd,
                                 rect = rect
                             };
-                        
+
                             explorerWindows.Add(info);
                         }
                     }
                 }
-                return true;
-            }, IntPtr.Zero);
-        
-            return explorerWindows;
+            }
+
+            return true;
         }
     }
 }
+#endif
