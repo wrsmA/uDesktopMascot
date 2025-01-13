@@ -10,3 +10,7 @@
 
 # requirements
 * Unity 6000.0.31f1
+
+# 素材について
+* キャラクターアニメーションは、[Unity Muse Animate](https://muse.unity.com/ja-jp/explore)を用いて作成されています。
+* フォントは[Noto Sans Japanese](https://fonts.google.com/noto/specimen/Noto+Sans+JP?lang=ja_Jpan)です。[SIL OPEN FONT LICENSE Version 1.1](https://fonts.google.com/noto/specimen/Noto+Sans+JP/license?lang=ja_Jpan)に基づきNoto Sans JPフォントを再配布するものです。フォントの著作権は元の作者（Google）にあります。
