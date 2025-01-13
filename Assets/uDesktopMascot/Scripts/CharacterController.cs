@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Unity.Logging;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,9 +12,6 @@ namespace uDesktopMascot
     /// </summary>
     public class CharacterController : MonoBehaviour
     {
-        private static readonly int IsSitting = Animator.StringToHash("IsSitting");
-        private static readonly int IsDragging = Animator.StringToHash("IsHanding");
-
         /// <summary>
         /// モデルのアニメーター
         /// </summary>
@@ -50,9 +48,14 @@ namespace uDesktopMascot
         private bool _isDragging = false;
 
         /// <summary>
-        /// ドラッグ対象のオブジェクトがモデルかどうか
+        ///     ドラッグ対象のオブジェクトがモデルかどうか
         /// </summary>
-        private bool _isDraggingModel = false;
+        private bool _isDraggingModel;
+
+        /// <summary>
+        ///     ドラッグ開始位置
+        /// </summary>
+        private Vector2 _startDragPosition;
 
         private void Awake()
         {
@@ -69,8 +72,10 @@ namespace uDesktopMascot
             _inputActions.Enable();
 
             // イベントの購読
-            _inputActions.UI.Click.performed += OnClickPerformed;
+            _inputActions.UI.Click.started += OnClickStarted;
             _inputActions.UI.Click.canceled += OnClickCanceled;
+
+            _inputActions.UI.Hold.performed += OnHoldPerformed;
         }
 
         private void OnDisable()
@@ -79,8 +84,10 @@ namespace uDesktopMascot
             _inputActions.Disable();
 
             // イベントの購読解除
-            _inputActions.UI.Click.performed -= OnClickPerformed;
+            _inputActions.UI.Click.started -= OnClickStarted;
             _inputActions.UI.Click.canceled -= OnClickCanceled;
+
+            _inputActions.UI.Hold.performed -= OnHoldPerformed;
         }
 
         private void Start()
@@ -100,7 +107,7 @@ namespace uDesktopMascot
                 LoadVRM.UpdateAnimationController(_modelAnimator);
 
                 // モデルにColliderを追加（既にある場合は不要）
-                AddCollidersToModel();
+                LoadVRM.AddCollidersToModel(_model);
 
                 _isInitialized = true;
             } catch (Exception e)
@@ -156,30 +163,30 @@ namespace uDesktopMascot
             if (_isDragging && _isDraggingModel)
             {
                 // ドラッグ中はハンギングモーション（ぶら下がりモーション）
-                _modelAnimator.SetBool(IsSitting, false);
-                _modelAnimator.SetBool(IsDragging, true);
+                _modelAnimator.SetBool(Const.IsSitting, false);
+                _modelAnimator.SetBool(Const.IsDragging, true);
             } else
             {
-                _modelAnimator.SetBool(IsDragging, false);
+                _modelAnimator.SetBool(Const.IsDragging, false);
                 // 座りモーションまたは立ちモーションに切り替え
-                _modelAnimator.SetBool(IsSitting, false);
+                _modelAnimator.SetBool(Const.IsSitting, false);
             }
         }
 
         /// <summary>
-        /// クリックが押されたときの処理
+        ///     ドラッグが行われたときの処理
         /// </summary>
         /// <param name="context"></param>
-        private void OnClickPerformed(InputAction.CallbackContext context)
+        private void OnHoldPerformed(InputAction.CallbackContext context)
         {
-            // 入力の状態を切り替え
             _isDragging = !_isDragging;
+
             // マウス位置を取得
-            Vector2 mousePosition = _inputActions.UI.Point.ReadValue<Vector2>();
+            var mousePosition = _inputActions.UI.Point.ReadValue<Vector2>();
 
             // マウス位置からレイを飛ばす
-            Ray ray = _mainCamera.ScreenPointToRay(mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit))
+            var ray = _mainCamera.ScreenPointToRay(mousePosition);
+            if (Physics.Raycast(ray, out var hit))
             {
                 if (hit.transform == _model.transform || hit.transform.IsChildOf(_model.transform))
                 {
@@ -196,29 +203,29 @@ namespace uDesktopMascot
         }
 
         /// <summary>
+        ///     クリックが押されたときの処理
+        /// </summary>
+        /// <param name="context"></param>
+        private void OnClickStarted(InputAction.CallbackContext context)
+        {
+            Log.Debug("クリック開始");
+
+            // todo キャラクターを触ったときにモーションと音声の反応が付ける
+        }
+
+        /// <summary>
         /// クリックが離されたときの処理
         /// </summary>
         /// <param name="context"></param>
         private void OnClickCanceled(InputAction.CallbackContext context)
         {
             _isDragging = false;
-            _isDraggingModel = false;
+
+            // アニメーターのパラメータをリセット
+            _modelAnimator.SetBool(Const.IsDragging, false);
+            Log.Debug("Click終了");
         }
 
-        /// <summary>
-        /// モデルにColliderを追加する
-        /// </summary>
-        private void AddCollidersToModel()
-        {
-            // モデルの全てのSkinnedMeshRendererにMeshColliderを追加
-            var skinnedMeshes = _model.GetComponentsInChildren<SkinnedMeshRenderer>();
-            foreach (var skinnedMesh in skinnedMeshes)
-            {
-                MeshCollider collider = skinnedMesh.gameObject.AddComponent<MeshCollider>();
-                collider.sharedMesh = skinnedMesh.sharedMesh;
-                collider.convex = true; // 必要に応じて設定
-            }
-        }
 
         private void OnDestroy()
         {
