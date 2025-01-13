@@ -22,14 +22,14 @@ jobs:
         unityVersion: ['6000.0.31f1']
         include:
           - targetPlatform: StandaloneWindows64
-            runsOn: windows-latest       # Windowsランナーを指定
-            modules: windows-il2cpp      # Windows用IL2CPPモジュールを指定
+            runsOn: windows-latest
+            modules: windows-il2cpp
           - targetPlatform: StandaloneOSX
             runsOn: macos-latest
-            modules: mac-il2cpp          # Mac用IL2CPPモジュールを指定（推奨）
+            modules: mac-il2cpp
           - targetPlatform: StandaloneLinux64
             runsOn: ubuntu-latest
-            modules: linux-il2cpp        # Linux用IL2CPPモジュールを指定（推奨）
+            modules: linux-il2cpp
     runs-on: ${{ matrix.runsOn }}
     steps:
       - name: Check out my unity project.
@@ -71,7 +71,6 @@ jobs:
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
           unityVersion: ${{ matrix.unityVersion }}
-          modules: ${{ matrix.modules }}
 
       - name: Upload the Build for ${{ matrix.targetPlatform }}
         uses: actions/upload-artifact@v4.6.0
