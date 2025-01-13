@@ -2,7 +2,10 @@
 
 namespace uDesktopMascot
 {
-    public static class Utility
+    /// <summary>
+    ///     画面座標系に関するユーティリティクラス
+    /// </summary>
+    public static class ScreenUtility
     {
         public static Vector2 GetModelScreenPosition(Camera mainCamera, Transform modelTransform)
         {
