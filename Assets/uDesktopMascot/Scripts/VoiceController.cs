@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Unity.Logging;
 using UnityEngine;
-using UnityEngine.Networking;
 using Random = UnityEngine.Random;
 
 namespace uDesktopMascot
@@ -65,7 +62,18 @@ namespace uDesktopMascot
             var cancellationToken = _cancellationTokenSource.Token;
 
             // クリックボイスをロード
-            LoadVoices(
+            LoadClickVoices(cancellationToken).Forget();
+
+            // ドラッグボイスをロード
+            LoadDragVoices(cancellationToken).Forget();
+        }
+
+        /// <summary>
+        ///     クリックボイスを非同期でロードする
+        /// </summary>
+        private async UniTaskVoid LoadClickVoices(CancellationToken cancellationToken)
+        {
+            await SoundUtility.LoadSoundsAsync(
                 ClickVoiceFolderPath,
                 clickVoice,
                 count =>
@@ -84,10 +92,16 @@ namespace uDesktopMascot
                     Log.Debug("クリックボイスフォルダが存在しません。デフォルトのクリックボイスを使用します。");
                     _clickVoicesLoaded = true;
                 },
-                cancellationToken).Forget();
+                cancellationToken
+            );
+        }
 
-            // ドラッグボイスをロード
-            LoadVoices(
+        /// <summary>
+        ///     ドラッグボイスを非同期でロードする
+        /// </summary>
+        private async UniTaskVoid LoadDragVoices(CancellationToken cancellationToken)
+        {
+            await SoundUtility.LoadSoundsAsync(
                 DragVoiceFolderPath,
                 dragVoice,
                 count =>
@@ -106,95 +120,8 @@ namespace uDesktopMascot
                     Log.Debug("ドラッグボイスフォルダが存在しません。デフォルトのドラッグボイスを使用します。");
                     _dragVoicesLoaded = true;
                 },
-                cancellationToken).Forget();
-        }
-
-        /// <summary>
-        ///     ボイスをロードする共通非同期メソッド
-        /// </summary>
-        /// <param name="relativeFolderPath">ボイスのフォルダパス (Application.streamingAssetsPathからの相対パス)</param>
-        /// <param name="voiceList">ロードした AudioClip を格納するリスト</param>
-        /// <param name="onLoaded">ロード完了時のコールバック（ロードしたファイル数を引数に取る）</param>
-        /// <param name="onDirectoryNotFound">フォルダが見つからなかったときのコールバック</param>
-        /// <param name="cancellationToken">キャンセルトークン</param>
-        private async UniTaskVoid LoadVoices(
-            string relativeFolderPath,
-            List<AudioClip> voiceList,
-            Action<int> onLoaded,
-            Action onDirectoryNotFound,
-            CancellationToken cancellationToken)
-        {
-            var voiceFolderPath = Path.Combine(Application.streamingAssetsPath, relativeFolderPath);
-
-            // フォルダが存在する場合
-            if (Directory.Exists(voiceFolderPath))
-            {
-                // 既存のボイスをクリア
-                voiceList.Clear();
-
-                // フォルダ内のすべてのファイルを取得
-                var files = Directory.GetFiles(voiceFolderPath);
-
-                foreach (var filePath in files)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    var extension = Path.GetExtension(filePath).ToLower();
-
-                    // 対象の拡張子のみを処理
-                    if (extension == ".wav" || extension == ".mp3" || extension == ".ogg")
-                    {
-                        var url = "file://" + filePath;
-
-                        using var www = UnityWebRequestMultimedia.GetAudioClip(url, GetAudioType(extension));
-                        try
-                        {
-                            await www.SendWebRequest().WithCancellation(cancellationToken);
-
-                            if (www.result == UnityWebRequest.Result.ConnectionError ||
-                                www.result == UnityWebRequest.Result.ProtocolError)
-                            {
-                                Log.Warning("Failed to load audio clip: {0}\nError: {1}", filePath, www.error);
-                            } else
-                            {
-                                var clip = DownloadHandlerAudioClip.GetContent(www);
-                                if (clip != null)
-                                {
-                                    voiceList.Add(clip);
-                                }
-                            }
-                        } catch (OperationCanceledException)
-                        {
-                            // キャンセル時の処理（必要に応じて）
-                            Log.Debug("ロードがキャンセルされました: {0}", filePath);
-                            return;
-                        }
-                    }
-                }
-
-                // ロード完了時のコールバックを呼び出す
-                onLoaded?.Invoke(voiceList.Count);
-            } else
-            {
-                // フォルダが存在しない場合
-                onDirectoryNotFound?.Invoke();
-            }
-        }
-
-        /// <summary>
-        ///     拡張子に応じてAudioTypeを取得する
-        /// </summary>
-        /// <param name="extension">ファイル拡張子</param>
-        /// <returns>AudioType</returns>
-        private AudioType GetAudioType(string extension)
-        {
-            return extension switch
-            {
-                ".wav" => AudioType.WAV,
-                ".mp3" => AudioType.MPEG,
-                ".ogg" => AudioType.OGGVORBIS,
-                _ => AudioType.UNKNOWN
-            };
+                cancellationToken
+            );
         }
 
         /// <summary>
