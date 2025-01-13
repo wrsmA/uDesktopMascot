@@ -126,7 +126,7 @@ namespace uDesktopMascot
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 
             // モデルのスクリーン座標を取得
-            Vector2 modelScreenPos = Utility.GetModelScreenPosition(_mainCamera, _model.transform);
+            var modelScreenPos = ScreenUtility.GetModelScreenPosition(_mainCamera, _model.transform);
 
             // エクスプローラーウィンドウの位置を取得
             var explorerWindows = ExplorerWindowDetector.GetExplorerWindows();
@@ -192,6 +192,7 @@ namespace uDesktopMascot
                 {
                     // モデルがクリックされた
                     _isDraggingModel = true;
+                    VoiceController.Instance.PlayHoldVoice();
                 } else
                 {
                     _isDraggingModel = false;
@@ -209,6 +210,8 @@ namespace uDesktopMascot
         private void OnClickStarted(InputAction.CallbackContext context)
         {
             Log.Debug("クリック開始");
+
+            VoiceController.Instance.PlayClickVoice();
 
             // todo キャラクターを触ったときにモーションと音声の反応が付ける
         }
