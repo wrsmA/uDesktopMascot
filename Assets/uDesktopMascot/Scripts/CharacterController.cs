@@ -102,6 +102,7 @@ namespace uDesktopMascot
         private void Start()
         {
             InitModel().Forget();
+            VoiceController.Instance.PlayStartVoiceAsync(_cancellationTokenSource.Token).Forget();
         }
 
         /// <summary>
@@ -257,8 +258,17 @@ namespace uDesktopMascot
         /// <param name="cancellationToken"></param>
         private async UniTaskVoid HandleApplicationQuit(CancellationToken cancellationToken)
         {
+#if UNITY_EDITOR
+            // エディタの場合、再生モードを停止
+            // ref: https://docs.unity3d.com/ja/2023.2/ScriptReference/EditorApplication.html
+            // いろいろできそうだが、とりあえず再生モードを停止するだけにしておく
+            Log.Debug("アプリケーション終了ボイスを流します。Editorの場合はボイスの再生はしません");
+            await UniTask.CompletedTask;
+#else
             await VoiceController.Instance.PlayEndVoiceAsync(cancellationToken);
+            // ビルド後のアプリケーションでは通常の終了処理
             Application.Quit();
+#endif
         }
 
 
