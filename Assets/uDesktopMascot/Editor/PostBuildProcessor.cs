@@ -95,6 +95,14 @@ namespace uDesktopMascot.Editor
                 Directory.CreateDirectory(dragVoicePath);
                 Log.Debug($"Voice/Drag フォルダを作成しました: {dragVoicePath}");
             }
+
+            // BGM フォルダを作成
+            var bgmPath = Path.Combine(streamingAssetsPath, "BGM");
+            if (!Directory.Exists(bgmPath))
+            {
+                Directory.CreateDirectory(bgmPath);
+                Log.Debug($"BGM フォルダを作成しました: {bgmPath}");
+            }
         }
 
         /// <summary>
