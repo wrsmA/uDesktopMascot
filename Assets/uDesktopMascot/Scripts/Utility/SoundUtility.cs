@@ -34,11 +34,18 @@ namespace uDesktopMascot
             // フォルダが存在する場合
             if (Directory.Exists(folderPath))
             {
-                // 既存のサウンドリストをクリア
-                soundList.Clear();
-
                 // フォルダ内のすべてのファイルを取得
                 var files = Directory.GetFiles(folderPath);
+
+                if (files.Length == 0)
+                {
+                    // フォルダ内にファイルが存在しない場合
+                    onDirectoryNotFound?.Invoke();
+                    return;
+                }
+                
+                // 既存のサウンドリストをクリア
+                soundList.Clear();
 
                 foreach (var filePath in files)
                 {
