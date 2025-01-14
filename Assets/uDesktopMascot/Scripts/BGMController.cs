@@ -79,8 +79,6 @@ namespace uDesktopMascot
                     } else
                     {
                         Log.Debug("BGMを {0} 件ロードしました。", count);
-                        // ロード完了後に最初のBGMを再生開始
-                        PlayNextBGM();
                     }
                 },
                 () =>
@@ -99,6 +97,7 @@ namespace uDesktopMascot
         {
             if (!_bgmLoaded || bgmClips.Count == 0)
             {
+                Log.Warning("BGMがロードされていないか、BGMが存在しません。");
                 return;
             }
 
