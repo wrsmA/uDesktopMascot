@@ -53,6 +53,11 @@ namespace uDesktopMascot
         private bool _isDraggingModel;
 
         /// <summary>
+        ///     終了処理中かどうか
+        /// </summary>
+        private bool _isQuitting;
+
+        /// <summary>
         ///     ドラッグ開始位置
         /// </summary>
         private Vector2 _startDragPosition;
@@ -76,6 +81,8 @@ namespace uDesktopMascot
             _inputActions.UI.Click.canceled += OnClickCanceled;
 
             _inputActions.UI.Hold.performed += OnHoldPerformed;
+
+            Application.wantsToQuit += OnWantsToQuit;
         }
 
         private void OnDisable()
@@ -88,6 +95,8 @@ namespace uDesktopMascot
             _inputActions.UI.Click.canceled -= OnClickCanceled;
 
             _inputActions.UI.Hold.performed -= OnHoldPerformed;
+
+            Application.wantsToQuit -= OnWantsToQuit;
         }
 
         private void Start()
@@ -112,7 +121,7 @@ namespace uDesktopMascot
                 _isInitialized = true;
             } catch (Exception e)
             {
-                Debug.LogError($"モデルの初期化中にエラーが発生しました: {e.Message}");
+                Log.Error($"モデルの初期化中にエラーが発生しました: {e.Message}");
             }
         }
 
@@ -209,11 +218,7 @@ namespace uDesktopMascot
         /// <param name="context"></param>
         private void OnClickStarted(InputAction.CallbackContext context)
         {
-            Log.Debug("クリック開始");
-
             VoiceController.Instance.PlayClickVoice();
-
-            // todo キャラクターを触ったときにモーションと音声の反応が付ける
         }
 
         /// <summary>
@@ -227,6 +232,33 @@ namespace uDesktopMascot
             // アニメーターのパラメータをリセット
             _modelAnimator.SetBool(Const.IsDragging, false);
             Log.Debug("Click終了");
+        }
+
+        /// <summary>
+        ///     アプリケーションが終了するときの処理
+        /// </summary>
+        /// <returns></returns>
+        private bool OnWantsToQuit()
+        {
+            if (_isQuitting)
+            {
+                return true;
+            }
+
+            _isQuitting = true;
+            HandleApplicationQuit(_cancellationTokenSource.Token).Forget();
+            return false;
+        }
+
+
+        /// <summary>
+        ///     アプリケーションが終了するときの処理
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        private async UniTaskVoid HandleApplicationQuit(CancellationToken cancellationToken)
+        {
+            await VoiceController.Instance.PlayEndVoiceAsync(cancellationToken);
+            Application.Quit();
         }
 
 
