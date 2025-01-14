@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
+using System.Text.RegularExpressions;
 using Unity.Logging;
 using UnityEditor;
 using UnityEditor.Callbacks;
@@ -25,8 +26,11 @@ namespace uDesktopMascot.Editor
                 return;
             }
 
+            // アプリケーション名を取得
+            var appName = Path.GetFileNameWithoutExtension(pathToBuiltProject);
+
             // プラットフォームに応じた StreamingAssets のパスを取得
-            var streamingAssetsPath = GetStreamingAssetsPath(target, buildDirectory, pathToBuiltProject);
+            var streamingAssetsPath = GetStreamingAssetsPath(target, buildDirectory, appName);
             if (string.IsNullOrEmpty(streamingAssetsPath))
             {
                 Log.Warning("このプラットフォームはサポートされていません: " + target);
@@ -36,8 +40,8 @@ namespace uDesktopMascot.Editor
             // 必要なフォルダを作成
             CreateNecessaryDirectories(streamingAssetsPath);
 
-            // ビルドフォルダを ZIP 圧縮（最大圧縮）
-            CreateMaxCompressedZipOfBuildFolder(buildDirectory, pathToBuiltProject);
+            // ビルドフォルダを最大圧縮で ZIP 圧縮
+            CreateMaxCompressedZipOfBuildFolder(buildDirectory, appName);
 
             Log.Debug("ビルド後処理が完了しました。");
         }
@@ -47,13 +51,10 @@ namespace uDesktopMascot.Editor
         /// </summary>
         /// <param name="target">ビルドターゲット</param>
         /// <param name="buildDirectory">ビルドディレクトリのパス</param>
-        /// <param name="pathToBuiltProject">ビルドされたプロジェクトのパス</param>
+        /// <param name="appName">アプリケーション名</param>
         /// <returns>StreamingAssets のフルパス</returns>
-        private static string GetStreamingAssetsPath(BuildTarget target, string buildDirectory,
-            string pathToBuiltProject)
+        private static string GetStreamingAssetsPath(BuildTarget target, string buildDirectory, string appName)
         {
-            var appName = Path.GetFileNameWithoutExtension(pathToBuiltProject);
-
             return target switch
             {
                 BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64 or BuildTarget.StandaloneLinux64 =>
@@ -87,12 +88,20 @@ namespace uDesktopMascot.Editor
                 Log.Debug($"Voice/Click フォルダを作成しました: {clickVoicePath}");
             }
 
-            // Voice/Drag フォルダを作成（または Voice/Hold フォルダ）
+            // Voice/Drag フォルダを作成
             var dragVoicePath = Path.Combine(streamingAssetsPath, "Voice", "Drag");
             if (!Directory.Exists(dragVoicePath))
             {
                 Directory.CreateDirectory(dragVoicePath);
                 Log.Debug($"Voice/Drag フォルダを作成しました: {dragVoicePath}");
+            }
+
+            // BGM フォルダを作成
+            var bgmPath = Path.Combine(streamingAssetsPath, "BGM");
+            if (!Directory.Exists(bgmPath))
+            {
+                Directory.CreateDirectory(bgmPath);
+                Log.Debug($"BGM フォルダを作成しました: {bgmPath}");
             }
         }
 
@@ -100,18 +109,13 @@ namespace uDesktopMascot.Editor
         ///     ビルドフォルダを最大圧縮で ZIP 圧縮する
         /// </summary>
         /// <param name="buildDirectory">ビルドディレクトリのパス</param>
-        /// <param name="pathToBuiltProject">ビルドされたプロジェクトのパス</param>
-        private static void CreateMaxCompressedZipOfBuildFolder(string buildDirectory, string pathToBuiltProject)
+        /// <param name="appName">アプリケーション名</param>
+        private static void CreateMaxCompressedZipOfBuildFolder(string buildDirectory, string appName)
         {
             try
             {
-                var appName = Path.GetFileNameWithoutExtension(pathToBuiltProject);
-
-                // ビルドフォルダのパス
-                var buildFolderPath = buildDirectory;
-
                 // ビルドフォルダの親ディレクトリのパス（ZIP ファイルの保存先）
-                var parentInfo = Directory.GetParent(buildFolderPath);
+                var parentInfo = Directory.GetParent(buildDirectory);
                 if (parentInfo == null)
                 {
                     Log.Error("ビルドフォルダの親ディレクトリが取得できませんでした。");
@@ -120,8 +124,20 @@ namespace uDesktopMascot.Editor
 
                 var parentDirectory = parentInfo.FullName;
 
-                // ZIP ファイルの保存先（親ディレクトリに {appName}.zip として保存）
-                var zipFilePath = Path.Combine(parentDirectory, $"{appName}.zip");
+                // Player Settings からバージョンを取得
+                var projectVersion = PlayerSettings.bundleVersion;
+                if (string.IsNullOrEmpty(projectVersion))
+                {
+                    projectVersion = "0.0.0";
+                    Log.Warning("Player Settings のバージョンが設定されていません。デフォルト値 '0.0.0' を使用します。");
+                }
+
+                // バージョン文字列をファイル名に使用できる形式に変換
+                var sanitizedVersion = Regex.Replace(projectVersion, @"[^\d\.]", "").Replace(".", "_");
+
+                // ZIP ファイルの保存先（親ディレクトリに {appName}_v{sanitizedVersion}.zip として保存）
+                var zipFileName = $"{appName}_v{sanitizedVersion}.zip";
+                var zipFilePath = Path.Combine(parentDirectory, zipFileName);
 
                 // 既存の ZIP ファイルを削除
                 if (File.Exists(zipFilePath))
@@ -130,11 +146,12 @@ namespace uDesktopMascot.Editor
                     Log.Debug($"既存の ZIP ファイルを削除しました: {zipFilePath}");
                 }
 
-                // フォルダを最大圧縮で ZIP 圧縮
-                CompressDirectory(buildFolderPath, zipFilePath, CompressionLevel.Optimal);
+                // ビルドディレクトリを最大圧縮で ZIP 圧縮
+                CompressDirectory(buildDirectory, zipFilePath, CompressionLevel.Optimal);
 
                 Log.Debug($"ビルドフォルダを最大圧縮で ZIP 圧縮しました: {zipFilePath}");
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Log.Error($"ビルドフォルダの ZIP 圧縮中にエラーが発生しました: {ex.Message}");
             }
@@ -154,11 +171,25 @@ namespace uDesktopMascot.Editor
             foreach (var file in files)
             {
                 // ファイルの相対パスを取得
-                var relativePath = Path.GetRelativePath(sourceDir, file);
+                var relativePath = GetRelativePath(sourceDir, file);
 
                 // ZIP エントリとして追加
                 zipArchive.CreateEntryFromFile(file, relativePath, compressionLevel);
             }
+        }
+
+        /// <summary>
+        ///     ファイルパスの相対パスを取得するヘルパーメソッド
+        /// </summary>
+        private static string GetRelativePath(string basePath, string targetPath)
+        {
+            var baseUri = new Uri(basePath.EndsWith(Path.DirectorySeparatorChar.ToString())
+                ? basePath
+                : basePath + Path.DirectorySeparatorChar);
+            var targetUri = new Uri(targetPath);
+            return Uri.UnescapeDataString(baseUri.MakeRelativeUri(targetUri)
+                .ToString()
+                .Replace('/', Path.DirectorySeparatorChar));
         }
     }
 }

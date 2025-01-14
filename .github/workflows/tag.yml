@@ -36,9 +36,16 @@ jobs:
       - name: タグを作成してプッシュ
         env:
           TAG_NAME: ${{ github.event.inputs.tag_name }}
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           git config --global user.name "${{ github.actor }}"
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
           git tag "$TAG_NAME"
           git push origin "$TAG_NAME"
+
+      - name: リリースノートのドラフトを作成
+        uses: softprops/action-gh-release@v2.2.1
+        with:
+          tag_name: ${{ github.event.inputs.tag_name }}
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
