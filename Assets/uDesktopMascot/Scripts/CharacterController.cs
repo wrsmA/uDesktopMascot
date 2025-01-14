@@ -260,7 +260,7 @@ namespace uDesktopMascot
         {
 #if UNITY_EDITOR
             // エディタの場合、再生モードを停止
-            // ref: https://docs.unity3d.com/ja/2023.2/ScriptReference/EditorApplication.html
+            // ref: https://docs.unity3d.com/6000.0/Documentation/ScriptReference/EditorApplication.html
             // いろいろできそうだが、とりあえず再生モードを停止するだけにしておく
             Log.Debug("アプリケーション終了ボイスを流します。Editorの場合はボイスの再生はしません");
             await UniTask.CompletedTask;
