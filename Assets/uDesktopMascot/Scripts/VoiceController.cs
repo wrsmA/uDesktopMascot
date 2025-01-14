@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Unity.Logging;
@@ -23,6 +24,16 @@ namespace uDesktopMascot
         [SerializeField] private List<AudioClip> dragVoice;
 
         /// <summary>
+        ///     アプリ起動時のボイス
+        /// </summary>
+        [SerializeField] private List<AudioClip> startVoice;
+
+        /// <summary>
+        ///     アプリ終了時のボイス
+        /// </summary>
+        [SerializeField] private List<AudioClip> endVoice;
+
+        /// <summary>
         ///     オーディオソース
         /// </summary>
         private AudioSource _audioSource;
@@ -38,6 +49,16 @@ namespace uDesktopMascot
         private bool _dragVoicesLoaded;
 
         /// <summary>
+        ///     アプリ起動時のボイスのロードが完了したかどうか
+        /// </summary>
+        private bool _startVoicesLoaded;
+
+        /// <summary>
+        ///     アプリ終了時のボイスのロードが完了したかどうか
+        /// </summary>
+        private bool _endVoicesLoaded;
+
+        /// <summary>
         ///     クリックボイスのフォルダパス
         /// </summary>
         private const string ClickVoiceFolderPath = "Voice/Click";
@@ -46,6 +67,16 @@ namespace uDesktopMascot
         ///     ドラッグボイスのフォルダパス
         /// </summary>
         private const string DragVoiceFolderPath = "Voice/Drag";
+
+        /// <summary>
+        ///     アプリ起動時のボイスのフォルダパス
+        /// </summary>
+        private const string StartVoiceFolderPath = "Voice/Start";
+
+        /// <summary>
+        ///     アプリ終了時のボイスのフォルダパス
+        /// </summary>
+        private const string EndVoiceFolderPath = "Voice/End";
 
         /// <summary>
         ///     キャンセルトークンソース
@@ -66,6 +97,71 @@ namespace uDesktopMascot
 
             // ドラッグボイスをロード
             LoadDragVoices(cancellationToken).Forget();
+
+            // アプリ起動時のボイスをロード
+            LoadStartVoices(cancellationToken).Forget();
+
+            // アプリ終了時のボイスをロード
+            LoadEndVoices(cancellationToken).Forget();
+        }
+
+        /// <summary>
+        ///     アプリ終了時のボイスを非同期でロードする
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        private async UniTaskVoid LoadStartVoices(CancellationToken cancellationToken)
+        {
+            await SoundUtility.LoadSoundsAsync(
+                StartVoiceFolderPath,
+                startVoice,
+                count =>
+                {
+                    _startVoicesLoaded = true;
+                    if (count == 0)
+                    {
+                        Log.Warning("スタート時のボイスがロードされませんでした。フォルダに有効なオーディオファイルがありません。");
+                    } else
+                    {
+                        Log.Debug("スタート時のボイスを {0} 件ロードしました。", count);
+                    }
+                },
+                () =>
+                {
+                    Log.Debug("スタート時のボイスフォルダが存在しません。デフォルトのクリックボイスを使用します。");
+                    _startVoicesLoaded = true;
+                },
+                cancellationToken
+            );
+        }
+
+        /// <summary>
+        ///     アプリ起動時のボイスを非同期でロードする
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private async UniTaskVoid LoadEndVoices(CancellationToken cancellationToken)
+        {
+            await SoundUtility.LoadSoundsAsync(
+                EndVoiceFolderPath,
+                endVoice,
+                count =>
+                {
+                    _endVoicesLoaded = true;
+                    if (count == 0)
+                    {
+                        Log.Warning("エンド時のボイスがロードされませんでした。フォルダに有効なオーディオファイルがありません。");
+                    } else
+                    {
+                        Log.Debug("エンド時のボイスを {0} 件ロードしました。", count);
+                    }
+                },
+                () =>
+                {
+                    Log.Debug("エンド時のボイスフォルダが存在しません。デフォルトのクリックボイスを使用します。");
+                    _endVoicesLoaded = true;
+                },
+                cancellationToken
+            );
         }
 
         /// <summary>
@@ -160,6 +256,52 @@ namespace uDesktopMascot
             }
 
             _audioSource.PlayOneShot(dragVoice[Random.Range(0, dragVoice.Count)]);
+        }
+
+        /// <summary>
+        ///     アプリ起動時のボイスを再生する
+        /// </summary>
+        public async UniTask PlayStartVoiceAsync(CancellationToken cancellationToken)
+        {
+            if (!_startVoicesLoaded)
+            {
+                // ロードが完了していない場合は待機
+                await UniTask.WaitUntil(() => _startVoicesLoaded, cancellationToken: cancellationToken);
+            }
+
+            if (startVoice == null || startVoice.Count == 0)
+            {
+                return;
+            }
+
+            var clip = startVoice[Random.Range(0, startVoice.Count)];
+            _audioSource.PlayOneShot(clip);
+
+            // クリップの長さ分待機
+            await UniTask.Delay(TimeSpan.FromSeconds(clip.length), cancellationToken: cancellationToken);
+        }
+
+        /// <summary>
+        ///     アプリ終了時のボイスを再生する
+        /// </summary>
+        public async UniTask PlayEndVoiceAsync(CancellationToken cancellationToken)
+        {
+            if (!_endVoicesLoaded)
+            {
+                // ロードが完了していない場合は待機
+                await UniTask.WaitUntil(() => _endVoicesLoaded, cancellationToken: cancellationToken);
+            }
+
+            if (endVoice == null || endVoice.Count == 0)
+            {
+                return;
+            }
+
+            var clip = endVoice[Random.Range(0, endVoice.Count)];
+            _audioSource.PlayOneShot(clip);
+
+            // クリップの長さ分待機
+            await UniTask.Delay(TimeSpan.FromSeconds(clip.length), cancellationToken: cancellationToken);
         }
 
         private void OnDestroy()
