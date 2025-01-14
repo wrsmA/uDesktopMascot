@@ -26,12 +26,11 @@ namespace uDesktopMascot.Editor
                 return;
             }
 
-            // アプリケーション名とビルドフォルダ名を定義
-            var appName = "uDesktopMascot"; // アプリケーション名（"Build" を含まない）
-            var buildFolderName = "uDesktopMascotBuild"; // ビルドフォルダ名
+            // アプリケーション名を取得
+            var appName = Path.GetFileNameWithoutExtension(pathToBuiltProject);
 
             // プラットフォームに応じた StreamingAssets のパスを取得
-            var streamingAssetsPath = GetStreamingAssetsPath(target, buildDirectory, appName, buildFolderName);
+            var streamingAssetsPath = GetStreamingAssetsPath(target, buildDirectory, appName);
             if (string.IsNullOrEmpty(streamingAssetsPath))
             {
                 Log.Warning("このプラットフォームはサポートされていません: " + target);
@@ -42,7 +41,7 @@ namespace uDesktopMascot.Editor
             CreateNecessaryDirectories(streamingAssetsPath);
 
             // ビルドフォルダを最大圧縮で ZIP 圧縮
-            CreateMaxCompressedZipOfBuildFolder(buildDirectory, appName, buildFolderName);
+            CreateMaxCompressedZipOfBuildFolder(buildDirectory, appName);
 
             Log.Debug("ビルド後処理が完了しました。");
         }
@@ -53,20 +52,17 @@ namespace uDesktopMascot.Editor
         /// <param name="target">ビルドターゲット</param>
         /// <param name="buildDirectory">ビルドディレクトリのパス</param>
         /// <param name="appName">アプリケーション名</param>
-        /// <param name="buildFolderName">ビルドフォルダ名</param>
         /// <returns>StreamingAssets のフルパス</returns>
-        private static string GetStreamingAssetsPath(BuildTarget target, string buildDirectory, string appName,
-            string buildFolderName)
+        private static string GetStreamingAssetsPath(BuildTarget target, string buildDirectory, string appName)
         {
             return target switch
             {
                 BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64 or BuildTarget.StandaloneLinux64 =>
                     // Windows および Linux の場合
-                    Path.Combine(buildDirectory, $"{buildFolderName}_Data", "StreamingAssets"),
+                    Path.Combine(buildDirectory, $"{appName}_Data", "StreamingAssets"),
                 BuildTarget.StandaloneOSX =>
                     // macOS の場合
-                    Path.Combine(buildDirectory, $"{buildFolderName}.app", "Contents", "Resources", "Data",
-                        "StreamingAssets"),
+                    Path.Combine(buildDirectory, $"{appName}.app", "Contents", "Resources", "Data", "StreamingAssets"),
                 _ => null
             };
         }
@@ -99,6 +95,14 @@ namespace uDesktopMascot.Editor
                 Directory.CreateDirectory(dragVoicePath);
                 Log.Debug($"Voice/Drag フォルダを作成しました: {dragVoicePath}");
             }
+
+            // BGM フォルダを作成
+            var bgmPath = Path.Combine(streamingAssetsPath, "BGM");
+            if (!Directory.Exists(bgmPath))
+            {
+                Directory.CreateDirectory(bgmPath);
+                Log.Debug($"BGM フォルダを作成しました: {bgmPath}");
+            }
         }
 
         /// <summary>
@@ -106,17 +110,12 @@ namespace uDesktopMascot.Editor
         /// </summary>
         /// <param name="buildDirectory">ビルドディレクトリのパス</param>
         /// <param name="appName">アプリケーション名</param>
-        /// <param name="buildFolderName">ビルドフォルダ名</param>
-        private static void CreateMaxCompressedZipOfBuildFolder(string buildDirectory, string appName,
-            string buildFolderName)
+        private static void CreateMaxCompressedZipOfBuildFolder(string buildDirectory, string appName)
         {
             try
             {
-                // ビルドフォルダのパス
-                var buildFolderPath = buildDirectory;
-
                 // ビルドフォルダの親ディレクトリのパス（ZIP ファイルの保存先）
-                var parentInfo = Directory.GetParent(buildFolderPath);
+                var parentInfo = Directory.GetParent(buildDirectory);
                 if (parentInfo == null)
                 {
                     Log.Error("ビルドフォルダの親ディレクトリが取得できませんでした。");
@@ -147,20 +146,12 @@ namespace uDesktopMascot.Editor
                     Log.Debug($"既存の ZIP ファイルを削除しました: {zipFilePath}");
                 }
 
-                // 圧縮対象のディレクトリ（ビルドフォルダ）
-                var sourceDirectory = Path.Combine(parentDirectory, buildFolderName);
-
-                if (!Directory.Exists(sourceDirectory))
-                {
-                    Log.Error("圧縮対象のビルドフォルダが見つかりません: " + sourceDirectory);
-                    return;
-                }
-
-                // フォルダを最大圧縮で ZIP 圧縮
-                CompressDirectory(sourceDirectory, zipFilePath, CompressionLevel.Optimal);
+                // ビルドディレクトリを最大圧縮で ZIP 圧縮
+                CompressDirectory(buildDirectory, zipFilePath, CompressionLevel.Optimal);
 
                 Log.Debug($"ビルドフォルダを最大圧縮で ZIP 圧縮しました: {zipFilePath}");
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Log.Error($"ビルドフォルダの ZIP 圧縮中にエラーが発生しました: {ex.Message}");
             }
