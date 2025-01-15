@@ -78,8 +78,7 @@ jobs:
         if: matrix.targetPlatform == 'StandaloneWindows64'
         uses: Minionguyjpro/Inno-Setup-Action@v1.0.0
         with:
-          setup_script: 'setup.iss'
-          app_version: '0.0.3'
+          path: 'setup.iss'
 
       - name: Upload Installer
         if: matrix.targetPlatform == 'StandaloneWindows64'
