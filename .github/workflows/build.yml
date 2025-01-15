@@ -68,6 +68,13 @@ jobs:
           targetPlatform: ${{ matrix.targetPlatform }}
           unityVersion: ${{ matrix.unityVersion }}
 
+      - name: List build directory structure
+        if: matrix.targetPlatform == 'StandaloneWindows64'
+        run: |
+          echo "--- Build Directory Structure ---"
+          dir build /s
+          echo "--- End of Build Directory Structure ---"
+
       - name: Upload the Build for ${{ matrix.targetPlatform }}
         if: matrix.targetPlatform == 'StandaloneOSX'
         uses: actions/upload-artifact@v4.6.0
