@@ -127,17 +127,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 9167954367673589909, guid: d7dcf50428b152040847878685fe0746, type: 3}
-      propertyPath: m_UiScaleMode
+    - target: {fileID: 9167954367673589908, guid: d7dcf50428b152040847878685fe0746, type: 3}
+      propertyPath: m_VertexColorAlwaysGammaSpace
       value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 9167954367673589909, guid: d7dcf50428b152040847878685fe0746, type: 3}
-      propertyPath: m_ReferenceResolution.x
-      value: 3840
-      objectReference: {fileID: 0}
-    - target: {fileID: 9167954367673589909, guid: d7dcf50428b152040847878685fe0746, type: 3}
-      propertyPath: m_ReferenceResolution.y
-      value: 2160
       objectReference: {fileID: 0}
     - target: {fileID: 9167954367673589911, guid: d7dcf50428b152040847878685fe0746, type: 3}
       propertyPath: m_Name
