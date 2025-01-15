@@ -26,6 +26,9 @@ namespace uDesktopMascot
         [DllImport("user32.dll")]
         private static extern IntPtr GetDC(IntPtr hWnd);
 
+        [DllImport("user32.dll")]
+        private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
         [DllImport("gdi32.dll")]
         private static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
 
@@ -46,13 +49,19 @@ namespace uDesktopMascot
         public static float GetDPIScale()
         {
             IntPtr hdc = GetDC(IntPtr.Zero);
-            int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
-            int dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
+            try{
+                int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
+                int dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
 
-            float dpiScaleX = dpiX / 96.0f;
-            float dpiScaleY = dpiY / 96.0f;
+                float dpiScaleX = dpiX / 96.0f;
+                float dpiScaleY = dpiY / 96.0f;
 
-            return (dpiScaleX + dpiScaleY) / 2.0f;
+                return (dpiScaleX + dpiScaleY) / 2.0f;
+
+            } finally
+            {
+                ReleaseDC(IntPtr.Zero, hdc);
+            }
         }
 
         public static List<ExplorerWindowInfo> GetExplorerWindows()
