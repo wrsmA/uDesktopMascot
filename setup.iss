@@ -5,7 +5,7 @@
 #define MyAppVersion "0.0.3"
 #define MyAppPublisher "MidraLab"
 #define MyAppURL "https://midralab.github.io/uDesktopMascot/"
-#define MyAppExeName "uDesktopMascot.exe"
+#define MyAppExeName "StandaloneWindows64.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
