@@ -68,11 +68,16 @@ jobs:
           targetPlatform: ${{ matrix.targetPlatform }}
           unityVersion: ${{ matrix.unityVersion }}
 
+      - name: Show Current Directory
+        run: |
+          echo "Current Directory:"
+          Get-Location
+
       - name: List build directory structure
         if: matrix.targetPlatform == 'StandaloneWindows64'
         run: |
           echo "--- Build Directory Structure ---"
-          dir build /s
+          ls build -Recurse
           echo "--- End of Build Directory Structure ---"
 
       - name: Upload the Build for ${{ matrix.targetPlatform }}
@@ -94,3 +99,11 @@ jobs:
         with:
           name: Installer-${{ steps.vars.outputs.sha_short }}
           path: "build/uDesktopMascot_0.0.3.exe"
+
+      - name: Check if 'build' Directory Exists
+        run: |
+          if (Test-Path -Path "build") {
+            Write-Output "'build' directory exists."
+          } else {
+            Write-Output "'build' directory does not exist."
+          }
