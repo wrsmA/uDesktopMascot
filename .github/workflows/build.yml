@@ -69,6 +69,7 @@ jobs:
           unityVersion: ${{ matrix.unityVersion }}
 
       - name: Upload the Build for ${{ matrix.targetPlatform }}
+        if: matrix.targetPlatform == 'StandaloneOSX'
         uses: actions/upload-artifact@v4.6.0
         with:
           name: Build-${{ matrix.targetPlatform }}-${{ steps.vars.outputs.sha_short }}
