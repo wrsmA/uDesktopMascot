@@ -127,6 +127,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 9167954367673589908, guid: d7dcf50428b152040847878685fe0746, type: 3}
+      propertyPath: m_VertexColorAlwaysGammaSpace
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9167954367673589911, guid: d7dcf50428b152040847878685fe0746, type: 3}
       propertyPath: m_Name
       value: DragMoveCanvas
@@ -216,6 +220,50 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d7dcf50428b152040847878685fe0746, type: 3}
+--- !u!1 &288916651
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 288916653}
+  - component: {fileID: 288916652}
+  m_Layer: 0
+  m_Name: SystemManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &288916652
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 288916651}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a967ffe8654af782bdba606394e167, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &288916653
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 288916651}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -509,7 +557,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984, type: 3}
       propertyPath: _isTopmost
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984, type: 3}
       propertyPath: _alphaValue
@@ -831,7 +879,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   clickVoice:
   - {fileID: 8300000, guid: 1dcdad14186b33c4199aa812d8903c3e, type: 3}
+  - {fileID: 8300000, guid: fe4fcef4dbbfb6c4bbd697e8fe8ad929, type: 3}
+  - {fileID: 8300000, guid: 3fb312cb3a5c7074dab389b17d5b4b0b, type: 3}
+  - {fileID: 8300000, guid: 20c1b88ea6bcff545950aedc973f9e20, type: 3}
   dragVoice: []
+  startVoice:
+  - {fileID: 8300000, guid: 4e24fd4c4a409eb42b02e0e6d3a79e7b, type: 3}
+  - {fileID: 8300000, guid: f64e09d62b7bc47408265e5b8b5e81d2, type: 3}
+  - {fileID: 8300000, guid: 60b24ad2fee26414492310e15aecdb3f, type: 3}
+  - {fileID: 8300000, guid: 5a9f61cec9392564eb25bcbdf5d9e8e5, type: 3}
+  - {fileID: 8300000, guid: 0de757c49949b5941a179555ef3f4cc2, type: 3}
+  endVoice:
+  - {fileID: 8300000, guid: dfbdd7b192bda194bb596a8a23744ad8, type: 3}
+  - {fileID: 8300000, guid: 574b7e61b1e91c54987212371fdd2b6b, type: 3}
+  - {fileID: 8300000, guid: 90e66863c9f9c104d97f7da9e98b837f, type: 3}
 --- !u!1 &1510895035
 GameObject:
   m_ObjectHideFlags: 0
@@ -1264,3 +1325,4 @@ SceneRoots:
   - {fileID: 1593956680}
   - {fileID: 1892326070}
   - {fileID: 939333447}
+  - {fileID: 288916653}
