@@ -1,0 +1,34 @@
+name: Translate README
+
+on:
+  pull_request:
+    paths:
+      - README.md
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install OpenAI library
+        run: pip install openai
+
+      - name: Run translation script
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: python .github/scripts/translate_readme.py
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README_EN.md README_CN.md
+          git commit -m "Update translations" || echo "No changes to commit"
+          git push
