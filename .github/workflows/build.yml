@@ -11,14 +11,13 @@ on:
 
 jobs:
   build:
-    name: Run builds for Windows, Mac, and Linux
+    name: Run builds for Windows, Mac
     strategy:
       fail-fast: false
       matrix:
         targetPlatform:
           - StandaloneWindows64
           - StandaloneOSX
-          - StandaloneLinux64
         unityVersion: ['6000.0.31f1']
         include:
           - targetPlatform: StandaloneWindows64
@@ -27,9 +26,6 @@ jobs:
           - targetPlatform: StandaloneOSX
             runsOn: macos-latest
             modules: mac-il2cpp
-          - targetPlatform: StandaloneLinux64
-            runsOn: ubuntu-latest
-            modules: linux-il2cpp
     runs-on: ${{ matrix.runsOn }}
     steps:
       - name: Check out my unity project.
