@@ -36,4 +36,4 @@ jobs:
         git config --local user.name "GitHub Action"
         git add README_EN.md README_CN.md
         git commit -m "Update translations" || echo "No changes to commit"
-        git push
+        git push origin ${{ github.head_ref }}  # PRのブランチにプッシュ
