@@ -39,3 +39,7 @@
 # 制作者クレジット
 * モデル: 「アオゾラ」様
 * BGM: MidraLab(eisuke)
+
+## 3rd Party Notices
+
+See [NOTICE](./NOTICE.md).
