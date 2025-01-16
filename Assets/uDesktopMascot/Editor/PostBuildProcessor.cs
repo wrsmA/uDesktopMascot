@@ -43,6 +43,13 @@ namespace uDesktopMascot.Editor
             // ビルドフォルダを最大圧縮で ZIP 圧縮
             CreateMaxCompressedZipOfBuildFolder(buildDirectory, appName);
 
+            // アプリのバージョンを取得
+            var appVersion = PlayerSettings.bundleVersion; // Application.version の代わりに PlayerSettings.bundleVersion を使用
+            // ビルドされたプロジェクトのディレクトリを基に version.txt を作成または上書き
+            var versionFilePath = Path.Combine(Path.GetDirectoryName(pathToBuiltProject), "version.txt");
+            File.WriteAllText(versionFilePath, appVersion);
+            Log.Debug($"アプリのバージョン: {appVersion}");
+
             Log.Debug("ビルド後処理が完了しました。");
         }
 
