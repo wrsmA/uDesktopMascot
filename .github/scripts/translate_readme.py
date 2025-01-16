@@ -5,13 +5,14 @@ client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 def translate_text(text, target_language):
     completion = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4o-mini",  # 使用するモデルの指定
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": f"Translate the following text to {target_language}: {text}"}
         ]
     )
-    return completion.choices[0].message['content']
+    # メッセージのコンテンツに直接アクセスする
+    return completion.choices[0].message.content
 
 def main():
     # Read the original README
