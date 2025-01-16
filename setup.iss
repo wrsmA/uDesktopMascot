@@ -32,7 +32,7 @@ DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
 OutputDir=build
-OutputBaseFilename=uDesktopMascot_{#MyAppVersion}
+OutputBaseFilename=uDesktopMascot_win64_{#MyAppVersion}
 SolidCompression=yes
 WizardStyle=modern
 
