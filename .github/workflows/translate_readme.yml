@@ -37,9 +37,6 @@ jobs:
         if git commit -m "Update translations"; then
           echo "Changes committed successfully."
 
-          # 未ステージの変更が無いことを確認するためにstashする
-          git stash push -m "Stashing before pull"
-
           # Pullでリモートの最新の変更を取り込み、リベース
           if git pull --rebase origin ${{ github.head_ref }}; then
             echo "Successfully rebased."
@@ -48,8 +45,11 @@ jobs:
             exit 1  # エラーが発生した場合、処理を中止
           fi
 
-          # スタッシュをポップして元に戻す
-          git stash pop
+          # スタッシュが必要かを確認
+          if git stash list | grep -q "stash@{0}"; then
+            # スタッシュが存在する場合はポップする
+            git stash pop
+          fi
 
           # 最後にプッシュ
           git push origin HEAD:${{ github.head_ref }}
