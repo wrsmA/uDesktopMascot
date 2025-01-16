@@ -118,3 +118,6 @@ jobs:
         with:
           name: uDesktopMascot_win64_${{ env.app_version }}
           path: "build/uDesktopMascot_win64_${{ env.app_version }}.exe"
+
+      - name: Check app_version
+        run: echo "app_version=${{ env.app_version }}"
