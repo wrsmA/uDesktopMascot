@@ -83,7 +83,7 @@ jobs:
 
       - name: setup.issのMyAppVersionを更新する
         run: |
-          sed -i 's/#define MyAppVersion ".*"/#define MyAppVersion "'$VERSION'"/' setup.iss
+          sed -i 's/#define MyAppVersion ".*"/#define MyAppVersion "'"$VERSION"'"' setup.iss
 
       - name: Set up Inno Setup
         if: matrix.targetPlatform == 'StandaloneWindows64'
