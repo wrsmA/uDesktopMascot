@@ -1,23 +1,30 @@
 # uDesktopMascot
 
-[![Unity Version](https://img.shields.io/badge/Unity-6000.0%2B-blueviolet?logo=unity)](https://unity.com/releases/editor/archive)
-[![Releases](https://img.shields.io/github/release/MidraLab/uDesktopMascot.svg)](https://github.com/MidraLab/uDesktopMascot/releases)
+[![Unity 版本](https://img.shields.io/badge/Unity-6000.0%2B-blueviolet?logo=unity)](https://unity.com/releases/editor/archive)
+[![版本发布](https://img.shields.io/github/release/MidraLab/uDesktopMascot.svg)](https://github.com/MidraLab/uDesktopMascot/releases)
 
-[日本語](README.md)  | 中文 | [English](README_EN.md)
+日本語 | [English](README_EN.md) | [中文](README_CN.md) | [Español](README_ES.md) | [Français](README_FR.md)
 
-这是一个桌面吉祥物的开放项目。
+**注意**: 上述语言（English、中文、Español、Français）是由GPT-4o-mini自动翻译生成的。关于翻译的准确性和语气，请参阅原文（日本语）。
 
-## 功能
-* 加载并显示放置在 StreamingAssets 文件夹中的任意 VRM 文件。如果有多个文件，将加载第一个找到的文件。
-* 加载并播放放置在 `StreamingAssets/Voice/` 文件夹中的音频文件。如果有多个文件，将随机播放一个。
-    * 点击时播放的音频从 `StreamingAssets/Voice/Click/` 中的文件加载。
-* 加载并播放 `StreamingAssets/BGM/` 文件夹中的音乐文件。如果有多个文件，将随机播放一个。
+## 概述
 
-# 要求
-* Unity 6000.0.31f1
+“uDesktopMascot”是一个开源项目，它可以在桌面上显示角色，根据用户的互动做出反应并播放声音。该项目是使用Unity开发的，支持VRM格式的角色，因此您可以轻松在桌面上享受自己喜欢的角色。
+
+## 特性
+* 可以读取并显示放置在StreamingAssets中的任意VRM文件。如果有多个，则读取搜索到的第一个。
+* 可以读取并播放放置在StreamingAssets/Voice/中的音频文件。如果有多个，则随机播放。
+  * 在点击时播放的声音，从StreamingAssets/Voice/Click/中读取并播放音频文件。
+* 可以读取并播放放置在StreamingAssets/BGM/中的音乐文件。如果有多个，则随机播放。
+* 角色的默认声音添加
+  * 默认声音使用[COEIROINK:つくよみちゃん](https://coeiroink.com/character/audio-character/tsukuyomi-chan)的音频。
+  * 在应用程序启动时、退出时和点击时播放。
+
+# 需求
+* Unity 6000.0.31f1(IL2CPP)
 
 # 关于素材
-* 默认角色动画是使用 [Unity Muse Animate](https://muse.unity.com/ja-jp/explore) 创建的。
-* 默认背景音乐 (BGM) 是在 MidraLab 内部创建的素材。
-* 使用的字体是 [Noto Sans Japanese](https://fonts.google.com/noto/specimen/Noto+Sans+JP?lang=ja_Jpan)。根据 [SIL OPEN FONT LICENSE Version 1.1](https://fonts.google.com/noto/specimen/Noto+Sans+JP/license?lang=ja_Jpan) 进行再发行。字体的版权属于原作者（Google）。
-* 默认语音来自 [COEIROINK: 月读酱](https://coeiroink.com/character/audio-character/tsukuyomi-chan)。关于使用的事宜已事先获得 COEIROINK 的确认。
+* 默认的角色动画是通过[Unity Muse Animate](https://muse.unity.com/ja-jp/explore)制作的。
+* 默认的背景音乐是MidraLab内创建的资产。
+* 字体使用[Noto Sans Japanese](https://fonts.google.com/noto/specimen/Noto+Sans+JP?lang=ja_Jpan)。根据[SIL OPEN FONT LICENSE Version 1.1](https://fonts.google.com/noto/specimen/Noto+Sans+JP/license?lang=ja_Jpan)重新分发Noto Sans JP字体。字体的版权归原作者（Google）所有。
+* 默认声音使用[COEIROINK:つくよみちゃん](https://coeiroink.com/character/audio-character/tsukuyomi-chan)的音频。使用方法已事先与COEIROINK确认。
