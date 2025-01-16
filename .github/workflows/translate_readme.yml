@@ -31,14 +31,21 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
+        
         # 変更をステージしてコミット
-        git add README_EN.md README_CN.md
+        git add README_EN.md README_CN.md README_ES.md README_FR.md
         if git commit -m "Update translations"; then
           echo "Changes committed successfully."
-        
+          
+          # 未ステージの変更が無いことを確認するためにstashする
+          git stash push -m "Stashing before pull"
+
           # Pullでリモートの最新の変更を取り込み、リベース
           git pull --rebase origin ${{ github.head_ref }}
-        
+
+          # スタッシュをポップして元に戻す
+          git stash pop
+          
           # 最後にプッシュ
           git push origin HEAD:${{ github.head_ref }}
         else
