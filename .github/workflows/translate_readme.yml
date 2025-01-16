@@ -21,9 +21,6 @@ jobs:
 
     - name: Install OpenAI library
       run: pip install openai
-    
-    - name: confirm library installation
-      run: pip list
 
     - name: Run translation script
       env:
