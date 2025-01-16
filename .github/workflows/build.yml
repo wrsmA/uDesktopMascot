@@ -102,10 +102,9 @@ jobs:
         if: matrix.targetPlatform == 'StandaloneWindows64'
         id: get_version
         run: |
-          $VERSION = Get-Content "version.txt"
-          echo "app_version=$VERSION" | Out-File -FilePath $GITHUB_ENV -Encoding utf8 -Append
+          VERSION=$(cat version.txt)
+          echo "app_version=$VERSION" >> $GITHUB_ENV
           echo "アプリのバージョン: $VERSION"
-          echo "app_version=${{ env.app_version }}"
 
       - name: Set up Inno Setup
         if: matrix.targetPlatform == 'StandaloneWindows64'
