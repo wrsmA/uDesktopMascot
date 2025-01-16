@@ -154,6 +154,9 @@ namespace uDesktopMascot
             // Y軸に180度回転
             model.transform.Rotate(0, 180, 0);
 
+            // モデルのサイズを調整
+            model.transform.localScale = Vector3.one * 3f;
+
             // シェーダーをlilToonに置き換える
             ReplaceShadersWithLilToon(model);
 
