@@ -1,10 +1,11 @@
-import openai
+from openai import OpenAI
 import os
 
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
 def translate_text(text, target_language):
-    openai.api_key = os.environ["OPENAI_API_KEY"]
-    completion = openai.ChatCompletion.create(
-        model="gpt-4o-mini",
+    completion = client.chat.completions.create(
+        model="gpt-4o",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": f"Translate the following text to {target_language}: {text}"}
