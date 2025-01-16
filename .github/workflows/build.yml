@@ -94,7 +94,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add version.txt inno_setup_config.txt
+          git add version.txt setup.txt
           git commit -m "Update version and config files after build"
           git push origin HEAD:${{ github.ref }}
 
