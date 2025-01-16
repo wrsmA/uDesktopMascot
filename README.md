@@ -12,6 +12,9 @@
 * SteamingAssets/Voice/以下に配置した音声ファイルを読み込んで再生します。複数ある場合は、ランダムで再生します。
   * クリック時に再生される音声は、StreamingAssets/Voice/Click/に配置した音声ファイルを読み込んで再生します。 
 * SteamingAssets/BGM/以下に配置した音楽ファイルを読み込んで再生します。複数ある場合は、ランダムで再生します。
+* キャラクターのデフォルトのボイスの追加
+  * デフォルトのボイスは、[COEIROINK:つくよみちゃん](https://coeiroink.com/character/audio-character/tsukuyomi-chan)の音声を使用しています。
+  * アプリ起動時、アプリ終了時、クリック時に再生されます。
 
 # requirements
 * Unity 6000.0.31f1(IL2CPP)
