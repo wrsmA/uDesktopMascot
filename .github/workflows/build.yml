@@ -1,4 +1,5 @@
 ﻿name: Run build
+
 on:
   workflow_dispatch: {}
   push:
@@ -10,7 +11,21 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
+  check-branch:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'  # PRイベントの場合にのみ実行
+    steps:
+      - name: Check PR branch
+        run: |
+          echo "The source branch for this PR is: ${{ github.head_ref }}"
+          if [[ "${{ github.head_ref }}" == "develop" ]]; then
+            echo "This PR is from the 'develop' branch. Proceeding with build."
+          else
+            echo "This PR is from the '${{ github.head_ref }}' branch. Non-develop branches are allowed."
+          fi
+
   build:
+    needs: check-branch  # check-branch ジョブの成功が必要
     name: Run builds for Windows, Mac
     strategy:
       fail-fast: false
