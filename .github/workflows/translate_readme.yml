@@ -38,7 +38,7 @@ jobs:
         git add README_EN.md README_CN.md
         if git commit -m "Update translations"; then
           echo "Changes committed successfully."
-          git push origin ${{ github.head_ref }}  # 現在のプルリクエストのブランチにプッシュ
+          git push origin HEAD:${{ github.head_ref }}  # 現在のHEADをPRブランチ名にプッシュ
         else
           echo "No changes to commit"
         fi
