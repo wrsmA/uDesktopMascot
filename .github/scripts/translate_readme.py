@@ -29,5 +29,15 @@ def main():
     with open('README_CN.md', 'w', encoding='utf-8') as file:
         file.write(translated_cn)
 
+    # Translate to Spanish
+    translated_es = translate_text(original_text, 'Spanish')
+    with open('README_ES.md', 'w', encoding='utf-8') as file:
+        file.write(translated_es)
+
+    # Translate to French
+    translated_fr = translate_text(original_text, 'French')
+    with open('README_FR.md', 'w', encoding='utf-8') as file:
+        file.write(translated_fr)
+
 if __name__ == "__main__":
     main()

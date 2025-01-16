@@ -1,9 +1,9 @@
-# uDesktopMascot
+﻿# uDesktopMascot
 
 [![Unity Version](https://img.shields.io/badge/Unity-6000.0%2B-blueviolet?logo=unity)](https://unity.com/releases/editor/archive)
 [![Releases](https://img.shields.io/github/release/MidraLab/uDesktopMascot.svg)](https://github.com/MidraLab/uDesktopMascot/releases)
 
-日本語 | [English](README_EN.md) | [中文](README_CN.md) | [Español](README_ES.md) | [Français](README_FR.md)
+日本語 | [English](README_EN.md) | [中文](README_CN.md)
 
 デスクトップマスコットのOpen Projectです。
 
