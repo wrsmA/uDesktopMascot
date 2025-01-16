@@ -13,59 +13,60 @@ on:
 jobs:
   check-branch:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'  # PRイベントの場合にのみ実行
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # すべての履歴とタグを取得
 
-      - name: Check PR branch
+      - name: Check event type and branch
         run: |
-          echo "このPRのソースブランチは: ${{ github.head_ref }}"
-          if [[ "${{ github.head_ref }}" == "develop" ]]; then
-            echo "このPRは 'develop' ブランチからのものです。ビルドを続行します。"
+          echo "イベント名: ${{ github.event_name }}"
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "これはプルリクエストイベントです。"
+            echo "PRのソースブランチ: ${{ github.head_ref }}"
+            echo "PRのターゲットブランチ: ${{ github.base_ref }}"
+            if [ "${{ github.head_ref }}" == "develop" ] && [ "${{ github.base_ref }}" == "main" ]; then
+              echo "これは 'develop' から 'main' へのPRです。バージョンチェックを実行します。"
+
+              # ProjectSettings.assetから現在のバージョンを取得
+              current_version=$(grep -m1 'bundleVersion:' ProjectSettings/ProjectSettings.asset | awk '{print $2}')
+              echo "現在のプロジェクトバージョン: $current_version"
+
+              # gitからバージョンタグのリストを取得
+              git fetch --tags
+              version_tags=$(git tag -l 'v*')
+              echo "既存のバージョンタグ: $version_tags"
+
+              # タグからバージョン番号を抽出
+              versions=()
+              for tag in $version_tags; do
+                versions+=("${tag#v}")
+              done
+
+              if [ ${#versions[@]} -eq 0 ]; then
+                highest_version="0.0.0"
+              else
+                highest_version=$(printf '%s\n' "${versions[@]}" | sort -V | tail -n1)
+              fi
+              echo "最高の既存バージョン: $highest_version"
+
+              # 現在のバージョンと最高の既存バージョンを比較
+              if [ "$(printf '%s\n' "$highest_version" "$current_version" | sort -V | tail -n1)" != "$current_version" ]; then
+                echo "エラー: 現在のバージョン ($current_version) は最高の既存バージョン ($highest_version) よりも高くありません。"
+                exit 1
+              else
+                echo "現在のバージョン ($current_version) は最高の既存バージョン ($highest_version) よりも高いです。"
+              fi
+            else
+              echo "これは 'develop' から 'main' へのPRではありません。バージョンチェックをスキップします。"
+            fi
           else
-            echo "このPRは '${{ github.head_ref }}' ブランチからのものです。ビルドを続行します。"
-          fi
-
-      - name: Check version number
-        if: ${{ github.head_ref == 'develop' && github.base_ref == 'main' }}
-        run: |
-          # ProjectSettings.assetから現在のバージョンを取得
-          current_version=$(grep -m1 'bundleVersion:' ProjectSettings/ProjectSettings.asset | awk '{print $2}')
-          echo "現在のプロジェクトバージョン: $current_version"
-
-          # gitからバージョンタグのリストを取得
-          git fetch --tags
-          version_tags=$(git tag -l 'v*')
-          echo "既存のバージョンタグ: $version_tags"
-
-          # タグからバージョン番号を抽出
-          versions=()
-          for tag in $version_tags; do
-            versions+=("${tag#v}")
-          done
-
-          echo "既存のバージョン: ${versions[@]}"
-
-          # 最高の既存バージョンを見つける
-          if [ ${#versions[@]} -eq 0 ]; then
-            highest_version="0.0.0"
-          else
-            highest_version=$(printf '%s\n' "${versions[@]}" | sort -V | tail -n1)
-          fi
-          echo "最高の既存バージョン: $highest_version"
-
-          # 現在のバージョンと最高の既存バージョンを比較
-          if [ "$(printf '%s\n' "$highest_version" "$current_version" | sort -V | tail -n1)" != "$current_version" ]; then
-            echo "エラー: 現在のバージョン ($current_version) は最高の既存バージョン ($highest_version) よりも高くありません。"
-            exit 1
-          else
-            echo "現在のバージョン ($current_version) は最高の既存バージョン ($highest_version) よりも高いです。"
+            echo "プルリクエストイベントではありません。チェックをスキップします。"
           fi
 
   build:
-    needs: check-branch  # check-branch ジョブの成功が必要
+    needs: [check-branch]
+    runs-on: ${{ matrix.runsOn }}
     name: Run builds for Windows, Mac
     strategy:
       fail-fast: false
@@ -81,7 +82,7 @@ jobs:
           - targetPlatform: StandaloneOSX
             runsOn: macos-latest
             modules: mac-il2cpp
-    runs-on: ${{ matrix.runsOn }}
+
     steps:
       - name: Check out my unity project.
         uses: actions/checkout@v4.2.2
