@@ -34,6 +34,11 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
+        # 変更をステージしてコミット
         git add README_EN.md README_CN.md
-        git commit -m "Update translations" || echo "No changes to commit"
-        git push origin ${{ github.head_ref }}  # PRのブランチにプッシュ
+        if git commit -m "Update translations"; then
+          echo "Changes committed successfully."
+          git push origin ${{ github.head_ref }}  # 現在のプルリクエストのブランチにプッシュ
+        else
+          echo "No changes to commit"
+        fi
