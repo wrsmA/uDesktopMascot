@@ -96,7 +96,7 @@ jobs:
           git config --local user.name "GitHub Action"
           git add version.txt inno_setup_config.txt
           git commit -m "Update version and config files after build"
-          git push origin HEAD:${{ github.head_ref }}
+          git push origin HEAD:${{ github.ref }}
 
       - name: Read version.txt
         if: matrix.targetPlatform == 'StandaloneWindows64'
