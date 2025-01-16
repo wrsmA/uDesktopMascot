@@ -31,21 +31,26 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        
+
         # 変更をステージしてコミット
         git add README_EN.md README_CN.md README_ES.md README_FR.md
         if git commit -m "Update translations"; then
           echo "Changes committed successfully."
-          
+
           # 未ステージの変更が無いことを確認するためにstashする
           git stash push -m "Stashing before pull"
 
           # Pullでリモートの最新の変更を取り込み、リベース
-          git pull --rebase origin ${{ github.head_ref }}
+          if git pull --rebase origin ${{ github.head_ref }}; then
+            echo "Successfully rebased."
+          else
+            echo "Rebase failed. Please review the errors."
+            exit 1  # エラーが発生した場合、処理を中止
+          fi
 
           # スタッシュをポップして元に戻す
           git stash pop
-          
+
           # 最後にプッシュ
           git push origin HEAD:${{ github.head_ref }}
         else
