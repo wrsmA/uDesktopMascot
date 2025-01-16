@@ -25,7 +25,6 @@ jobs:
           fi
 
   build:
-    needs: check-branch  # check-branch ジョブの成功が必要
     name: Run builds for Windows, Mac
     strategy:
       fail-fast: false
@@ -90,11 +89,20 @@ jobs:
           name: Build-${{ matrix.targetPlatform }}-${{ steps.vars.outputs.sha_short }}
           path: build
 
+      - name: Commit version and config files
+        if: matrix.targetPlatform == 'StandaloneWindows64'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add version.txt inno_setup_config.txt
+          git commit -m "Update version and config files after build"
+          git push origin HEAD:${{ github.head_ref }}
+
       - name: Read version.txt
         if: matrix.targetPlatform == 'StandaloneWindows64'
         id: get_version
         run: |
-          $VERSION = Get-Content "build/StandaloneWindows64/version.txt"
+          $VERSION = Get-Content "version.txt"
           echo "app_version=$VERSION" >> $GITHUB_ENV
           echo "アプリのバージョン: $VERSION"
 

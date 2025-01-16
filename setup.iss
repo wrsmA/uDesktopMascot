@@ -7,7 +7,7 @@
 #define MyAppExeName "StandaloneWindows64.exe"
 
 [Setup]
-#include "build\StandaloneWindows64\config.txt"
+#include "inno_setup_config.txt"
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{8C3A0DD1-5FD3-4F40-A7AA-5A08F5121022}
@@ -32,7 +32,7 @@ DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
 OutputDir=build
-OutputBaseFilename=uDesktopMascot_win64_{#MyAppVersion}
+OutputBaseFilename=uDesktopMascot_{#MyAppVersion}
 SolidCompression=yes
 WizardStyle=modern
 
