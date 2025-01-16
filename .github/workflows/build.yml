@@ -100,11 +100,10 @@ jobs:
 
       - name: Read version.txt
         if: matrix.targetPlatform == 'StandaloneWindows64'
+        uses: pCYSl5EDgo/cat@master
         id: get_version
-        run: |
-          VERSION=$(cat version.txt)
-          echo "app_version=$VERSION" >> $GITHUB_ENV
-          echo "アプリのバージョン: $VERSION"
+        with:
+          path: version.txt
 
       - name: Set up Inno Setup
         if: matrix.targetPlatform == 'StandaloneWindows64'
@@ -116,8 +115,8 @@ jobs:
         if: matrix.targetPlatform == 'StandaloneWindows64'
         uses: actions/upload-artifact@v4.6.0
         with:
-          name: uDesktopMascot_win64_${{ env.app_version }}
-          path: "build/uDesktopMascot_win64_${{ env.app_version }}.exe"
+          name: uDesktopMascot_win64_${{ steps.get_version.outputs.version }}
+          path: "build/uDesktopMascot_win64_${{ steps.get_version.outputs.version }}.exe"
 
       - name: Check app_version
-        run: echo "app_version=${{ env.app_version }}"
+        run: echo "app_version=${{ steps.get_version.outputs.version }}"
