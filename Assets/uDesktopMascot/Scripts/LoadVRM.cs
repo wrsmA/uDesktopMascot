@@ -18,7 +18,7 @@ namespace uDesktopMascot
         /// <summary>
         /// デフォルトのVRMファイル名
         /// </summary>
-        private const string DefaultVrmFileName = "DefaultModel/test";
+        private const string DefaultVrmFileName = "DefaultModel/DefaultModel";
 
         /// <summary>
         /// アニメーションコントローラーを設定
