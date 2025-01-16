@@ -15,13 +15,53 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'  # PRイベントの場合にのみ実行
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # すべての履歴とタグを取得
+
       - name: Check PR branch
         run: |
-          echo "The source branch for this PR is: ${{ github.head_ref }}"
+          echo "このPRのソースブランチは: ${{ github.head_ref }}"
           if [[ "${{ github.head_ref }}" == "develop" ]]; then
-            echo "This PR is from the 'develop' branch. Proceeding with build."
+            echo "このPRは 'develop' ブランチからのものです。ビルドを続行します。"
           else
-            echo "This PR is from the '${{ github.head_ref }}' branch. Non-develop branches are allowed."
+            echo "このPRは '${{ github.head_ref }}' ブランチからのものです。ビルドを続行します。"
+          fi
+
+      - name: Check version number
+        if: ${{ github.head_ref == 'develop' && github.base_ref == 'main' }}
+        run: |
+          # ProjectSettings.assetから現在のバージョンを取得
+          current_version=$(grep -m1 'bundleVersion:' ProjectSettings/ProjectSettings.asset | awk '{print $2}')
+          echo "現在のプロジェクトバージョン: $current_version"
+
+          # gitからバージョンタグのリストを取得
+          git fetch --tags
+          version_tags=$(git tag -l 'v*')
+          echo "既存のバージョンタグ: $version_tags"
+
+          # タグからバージョン番号を抽出
+          versions=()
+          for tag in $version_tags; do
+            versions+=("${tag#v}")
+          done
+
+          echo "既存のバージョン: ${versions[@]}"
+
+          # 最高の既存バージョンを見つける
+          if [ ${#versions[@]} -eq 0 ]; then
+            highest_version="0.0.0"
+          else
+            highest_version=$(printf '%s\n' "${versions[@]}" | sort -V | tail -n1)
+          fi
+          echo "最高の既存バージョン: $highest_version"
+
+          # 現在のバージョンと最高の既存バージョンを比較
+          if [ "$(printf '%s\n' "$highest_version" "$current_version" | sort -V | tail -n1)" != "$current_version" ]; then
+            echo "エラー: 現在のバージョン ($current_version) は最高の既存バージョン ($highest_version) よりも高くありません。"
+            exit 1
+          else
+            echo "現在のバージョン ($current_version) は最高の既存バージョン ($highest_version) よりも高いです。"
           fi
 
   build:
