@@ -7,7 +7,7 @@
 #define MyAppExeName "StandaloneWindows64.exe"
 
 [Setup]
-#include "inno_setup_config.txt"
+#include "setup.txt"
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{8C3A0DD1-5FD3-4F40-A7AA-5A08F5121022}
@@ -23,7 +23,7 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 ; "ArchitecturesAllowed=x64compatible" specifies that Setup cannot run
 ; on anything but x64 and Windows 11 on Arm.
 ArchitecturesAllowed=x64compatible
-; "ArchitecturesInstallIn64BitMode=x64compatible" requests that the
+; "ArchitecturesInstallIn64BitMode=x6   4compatible" requests that the
 ; install be done in "64-bit mode" on x64 or Windows 11 on Arm,
 ; meaning it should use the native 64-bit Program Files directory and
 ; the 64-bit view of the registry.
