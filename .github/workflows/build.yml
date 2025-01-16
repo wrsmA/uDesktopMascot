@@ -76,14 +76,11 @@ jobs:
           path: build
 
       - name: バージョンを読み取る
+        if: matrix.targetPlatform == 'StandaloneWindows64'
         id: get_version
         run: |
           $VERSION = Get-Content "build/StandaloneWindows64/version.txt"
           echo "app_version=$VERSION" >> $GITHUB_ENV
-
-      - name: setup.issのMyAppVersionを更新する
-        run: |
-          sed -i 's/#define MyAppVersion ".*"/#define MyAppVersion "'"$VERSION"'"' setup.iss
 
       - name: Set up Inno Setup
         if: matrix.targetPlatform == 'StandaloneWindows64'
@@ -95,5 +92,5 @@ jobs:
         if: matrix.targetPlatform == 'StandaloneWindows64'
         uses: actions/upload-artifact@v4.6.0
         with:
-          name: Installer-${{ env.app_version }}
-          path: "build/uDesktopMascot_${{ env.app_version }}.exe"
+          name: uDesktopMascot_win64_${{ env.app_version }}
+          path: "build/uDesktopMascot_win64_${{ env.app_version }}.exe"
