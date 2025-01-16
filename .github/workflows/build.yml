@@ -78,7 +78,7 @@ jobs:
       - name: バージョンを読み取る
         id: get_version
         run: |
-          VERSION=$(cat build/StandaloneWindows64/version.txt)
+          $VERSION = Get-Content "build/StandaloneWindows64/version.txt"
           echo "app_version=$VERSION" >> $GITHUB_ENV
 
       - name: setup.issのMyAppVersionを更新する
