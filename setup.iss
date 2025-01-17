@@ -2,17 +2,16 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "uDesktopMascot"
-#define MyAppVersion "0.0.4"
 #define MyAppPublisher "MidraLab"
 #define MyAppURL "https://midralab.github.io/uDesktopMascot/"
-#define MyAppExeName "uDesktopMascot.exe"
+#define MyAppExeName "StandaloneWindows64.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{8C3A0DD1-5FD3-4F40-A7AA-5A08F5121022}
 AppName={#MyAppName}
-AppVersion={#MyAppVersion}
+AppVersion=1.0.0
 ;AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
@@ -31,8 +30,8 @@ ArchitecturesInstallIn64BitMode=x64compatible
 DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
-OutputDir=Build
-OutputBaseFilename=uDesktopMascot_{#MyAppVersion}
+OutputDir=build
+OutputBaseFilename=uDesktopMascot_win64_installer
 SolidCompression=yes
 WizardStyle=modern
 
@@ -44,8 +43,8 @@ Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "Build\{#MyAppName}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "Build\{#MyAppName}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "build\StandaloneWindows64\StandaloneWindows64.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "build\StandaloneWindows64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
