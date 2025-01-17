@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -94,24 +95,30 @@ namespace uDesktopMascot
             // Prefabをインスタンス化
             var model = Object.Instantiate(prefab);
 
-            // モデルの位置を設定s
-            model.transform.position = Vector3.down * 2.5f;
-
-            // モデルの大きさを調整
-            model.transform.localScale = Vector3.one * 3f;
-
-            // Y軸に180度回転（必要に応じて）
-            model.transform.Rotate(0, 180, 0);
-
-            // モデルをアクティブ化
-            model.SetActive(true);
-
-            // すべてのRendererを有効化
-            EnableAllRenderers(model);
-
             Log.Debug("デフォルトモデルのロードと表示が完了しました: " + DefaultVrmFileName);
 
             return model;
+        }
+
+        /// <summary>
+        /// モデルのHipボーンを探す
+        /// </summary>
+        /// <param name="rootTransform"></param>
+        /// <returns></returns>
+        public static Transform FindHipBone(Transform rootTransform)
+        {
+            // VRMの場合、腰のボーンは "Joints/Hips" や "Root" などの名前であることが多い
+            // まずは "Hips" という名前のボーンを探します
+            Transform hipTransform = rootTransform.Find("Hips");
+            if (hipTransform != null)
+            {
+                return hipTransform;
+            }
+
+            // 見つからない場合、全ての子孫を探索します
+            hipTransform = rootTransform.GetComponentsInChildren<Transform>().FirstOrDefault(t => t.name == "Hips" || t.name == "Root" || t.name == "J_Bip_C_Hips");
+
+            return hipTransform;
         }
 
         /// <summary>
@@ -121,45 +128,26 @@ namespace uDesktopMascot
         /// <param name="cancellationToken"></param>
         private static async UniTask<GameObject> LoadAndDisplayModel(string path, CancellationToken cancellationToken)
         {
-            // VRMファイルをバイト配列として非同期で読み込み
-            var bytes = await File.ReadAllBytesAsync(path, cancellationToken);
-
-            return await LoadAndDisplayModelFromBytes(bytes, path,cancellationToken);
+            return await LoadAndDisplayModelFromPath(path,cancellationToken);
         }
 
         /// <summary>
         ///     バイト配列からVRMモデルをロードして表示する
         /// </summary>
-        /// <param name="bytes">VRMファイルのバイト配列</param>
-        /// <param name="fileName">ファイル名（ログ用）</param>
+        /// <param name="path"></param>
         /// <param name="cancellationToken"></param>
-        private static async UniTask<GameObject> LoadAndDisplayModelFromBytes(byte[] bytes, string fileName,CancellationToken cancellationToken)
+        private static async UniTask<GameObject> LoadAndDisplayModelFromPath(string path,CancellationToken cancellationToken)
         {
             // VRMファイルをロード（VRM 0.x および 1.x に対応）
-            Vrm10Instance instance = await Vrm10.LoadBytesAsync(bytes, canLoadVrm0X: true, ct: cancellationToken);
+            Vrm10Instance instance = await Vrm10.LoadPathAsync(path, canLoadVrm0X: true, ct: cancellationToken);
 
             // モデルのGameObjectを取得
             GameObject model = instance.gameObject;
             
-            // モデルの位置を設定（原点に配置）
-            // model.transform.position = Vector3.up * 5f;
-
-            // モデルのサイズを調整
-            model.transform.localScale = Vector3.one * 3f;
-            
-            // モデルのY軸を180度回転（必要に応じて）
-            model.transform.localRotation = Quaternion.Euler(0, 180, 0);
-
             // シェーダーをlilToonに置き換える
             ReplaceShadersWithLilToon(model);
 
-            // モデルをアクティブ化
-            model.SetActive(true);
-
-            // すべてのRendererを有効化
-            EnableAllRenderers(model);
-
-            Log.Info("VRMのロードと表示が完了しました: " + fileName);
+            Log.Info("VRMのロードと表示が完了しました: " + path);
 
             return model;
         }
@@ -201,43 +189,6 @@ namespace uDesktopMascot
             }
 
             Log.Info("シェーダーの置き換えが完了しました。");
-        }
-
-        /// <summary>
-        ///     モデルにColliderを追加する
-        /// </summary>
-        /// <param name="model"></param>
-        public static void AddCollidersToModel(GameObject model)
-        {
-            // モデルの全てのSkinnedMeshRendererにMeshColliderを追加
-            var skinnedMeshes = model.GetComponentsInChildren<SkinnedMeshRenderer>();
-            foreach (var skinnedMesh in skinnedMeshes)
-            {
-                var collider = skinnedMesh.gameObject.AddComponent<MeshCollider>();
-                collider.sharedMesh = skinnedMesh.sharedMesh;
-                collider.convex = false;
-            }
-        }
-
-        /// <summary>
-        /// モデル内のすべてのRendererコンポーネントを有効化する
-        /// </summary>
-        /// <param name="model">モデルのGameObject</param>
-        private static void EnableAllRenderers(GameObject model)
-        {
-            // SkinnedMeshRendererを有効化
-            var skinnedMeshRenderers = model.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-            foreach (var renderer in skinnedMeshRenderers)
-            {
-                renderer.enabled = true;
-            }
-
-            // MeshRendererを有効化
-            var meshRenderers = model.GetComponentsInChildren<MeshRenderer>(true);
-            foreach (var renderer in meshRenderers)
-            {
-                renderer.enabled = true;
-            }
         }
     }
 }
