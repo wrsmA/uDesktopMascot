@@ -54,7 +54,6 @@ namespace uDesktopMascot.Editor
             {
                 // ビルドフォルダを最大圧縮で ZIP 圧縮
                 CreateMaxCompressedZipOfBuildFolder(buildDirectory, appName);
-
             }
 
             Log.Debug("ビルド後処理が完了しました。");
