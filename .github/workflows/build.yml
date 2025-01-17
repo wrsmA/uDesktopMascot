@@ -89,22 +89,6 @@ jobs:
           name: Build-${{ matrix.targetPlatform }}-${{ steps.vars.outputs.sha_short }}
           path: build
 
-      - name: Commit version and config files
-        if: matrix.targetPlatform == 'StandaloneWindows64'
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add version.txt setup.txt
-          git commit -m "Update version and config files after build"
-          git push origin HEAD:${{ github.ref }}
-
-      - name: Read version.txt
-        if: matrix.targetPlatform == 'StandaloneWindows64'
-        uses: pCYSl5EDgo/cat@master
-        id: get_version
-        with:
-          path: version.txt
-
       - name: Set up Inno Setup
         if: matrix.targetPlatform == 'StandaloneWindows64'
         uses: Minionguyjpro/Inno-Setup-Action@v1.0.0
@@ -115,8 +99,5 @@ jobs:
         if: matrix.targetPlatform == 'StandaloneWindows64'
         uses: actions/upload-artifact@v4.6.0
         with:
-          name: uDesktopMascot_win64_${{ steps.get_version.outputs.version }}
-          path: "build/uDesktopMascot_win64_${{ steps.get_version.outputs.version }}.exe"
-
-      - name: Check app_version
-        run: echo "app_version=${{ steps.get_version.outputs.version }}"
+          name: uDesktopMascot_win64
+          path: "build/uDesktopMascot_win64.exe"

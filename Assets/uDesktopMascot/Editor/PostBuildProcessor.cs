@@ -46,8 +46,6 @@ namespace uDesktopMascot.Editor
                 // ビルドフォルダを最大圧縮で ZIP 圧縮
                 CreateMaxCompressedZipOfBuildFolder(buildDirectory, appName);
 
-                // アプリのバージョンを取得してファイルに書き込む
-                CreateAppVersionFiles(pathToBuiltProject);
             }
 
             Log.Debug("ビルド後処理が完了しました。");
@@ -197,23 +195,6 @@ namespace uDesktopMascot.Editor
             return Uri.UnescapeDataString(baseUri.MakeRelativeUri(targetUri)
                 .ToString()
                 .Replace('/', Path.DirectorySeparatorChar));
-        }
-
-        /// <summary>
-        ///     アプリのバージョンを取得して version.txt と config.txt に書き込む
-        /// </summary>
-        /// <param name="pathToBuiltProject">ビルドされたプロジェクトのパス</param>
-        private static void CreateAppVersionFiles(string pathToBuiltProject)
-        {
-            // InstallerのZipファイルにバージョンを書き込むために生成する
-            var appVersion = PlayerSettings.bundleVersion;
-            var versionFilePath = Path.Combine(Path.GetDirectoryName(pathToBuiltProject), "..", "..", "version.txt");
-            File.WriteAllText(versionFilePath, appVersion);
-
-            // Inno Setup の MyAppVersion にバージョンを書き込むために生成する
-            var configFilePath = Path.Combine(Path.GetDirectoryName(pathToBuiltProject), "..", "..", "setup.txt");
-            var configText = $"#define MyAppVersion \"{appVersion}\"";
-            File.WriteAllText(configFilePath, configText);
         }
     }
 }
