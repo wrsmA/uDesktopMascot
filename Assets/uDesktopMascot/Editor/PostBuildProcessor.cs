@@ -26,6 +26,15 @@ namespace uDesktopMascot.Editor
                 return;
             }
 
+            // ビルドディレクトリの名前を取得
+            var buildDirectoryName = new DirectoryInfo(buildDirectory).Name;
+
+            // ビルド時に選択したフォルダが uDesktopMascotBuild でない場合、警告を出す
+            if (buildDirectoryName != "uDesktopMascotBuild")
+            {
+                Log.Warning($"ビルド出力フォルダ名が 'uDesktopMascotBuild' ではありません（現在のフォルダ名: '{buildDirectoryName}'）。いくつかの後処理が実行されない可能性があります。");
+            }
+
             // アプリケーション名を取得
             var appName = Path.GetFileNameWithoutExtension(pathToBuiltProject);
 

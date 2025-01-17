@@ -277,7 +277,7 @@
     },
     "com.unity.nuget.newtonsoft-json": {
       "version": "3.2.1",
-      "depth": 1,
+      "depth": 0,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
@@ -460,6 +460,20 @@
         "com.vrmc.gltf": "0.128.1"
       },
       "hash": "2911cb72a905ab7d8b0f9e03397235d1c0293714"
+    },
+    "jp.amagamina.overwriter": {
+      "version": "https://github.com/ina-amagami/unity-overwriter.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "24c16816637242c4aad552ffed8d4fafd283fbec"
+    },
+    "jp.lilxyzw.liltoon": {
+      "version": "https://github.com/lilxyzw/lilToon.git?path=Assets/lilToon#master",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "ae6a81da053e8cd001f089fd02cc6402afab5701"
     },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",
