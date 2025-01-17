@@ -1,11 +1,11 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using UniGLTF;
-using Unity.Logging;
 using UnityEngine;
-using VRM;
+using Unity.Logging;
+using UniVRM10;
 using Object = UnityEngine.Object;
 
 namespace uDesktopMascot
@@ -53,7 +53,8 @@ namespace uDesktopMascot
                         {
                             // VRMファイルをロードしてモデルを表示
                             return await LoadAndDisplayModel(path, cancellationToken);
-                        } catch (Exception e)
+                        }
+                        catch (Exception e)
                         {
                             Log.Error($"VRMの読み込みまたは表示中にエラーが発生しました: {e.Message}");
                             // エラーが発生した場合、デフォルトのモデルを表示
@@ -70,7 +71,8 @@ namespace uDesktopMascot
                 // StreamingAssetsフォルダが存在しない場合、デフォルトのモデルをロード
                 Log.Info("StreamingAssetsフォルダが見つかりません。デフォルトのモデルを読み込みます。");
                 return LoadDefaultModel();
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Log.Error($"VRMの読み込みまたは表示中にエラーが発生しました: {e.Message}");
                 return null;
@@ -93,24 +95,30 @@ namespace uDesktopMascot
             // Prefabをインスタンス化
             var model = Object.Instantiate(prefab);
 
-            // モデルの位置を設定（原点に配置）
-            model.transform.position = Vector3.zero;
-
-            // モデルの大きさを調整
-            model.transform.localScale = Vector3.one * 3f;
-
-            // Y軸に180度回転（必要に応じて）
-            model.transform.Rotate(0, 180, 0);
-
-            // モデルをアクティブ化
-            model.SetActive(true);
-
-            // すべてのRendererを有効化
-            EnableAllRenderers(model);
-
             Log.Debug("デフォルトモデルのロードと表示が完了しました: " + DefaultVrmFileName);
 
             return model;
+        }
+
+        /// <summary>
+        /// モデルのHipボーンを探す
+        /// </summary>
+        /// <param name="rootTransform"></param>
+        /// <returns></returns>
+        public static Transform FindHipBone(Transform rootTransform)
+        {
+            // VRMの場合、腰のボーンは "Joints/Hips" や "Root" などの名前であることが多い
+            // まずは "Hips" という名前のボーンを探します
+            Transform hipTransform = rootTransform.Find("Hips");
+            if (hipTransform != null)
+            {
+                return hipTransform;
+            }
+
+            // 見つからない場合、全ての子孫を探索します
+            hipTransform = rootTransform.GetComponentsInChildren<Transform>().FirstOrDefault(t => t.name == "Hips" || t.name == "Root" || t.name == "J_Bip_C_Hips");
+
+            return hipTransform;
         }
 
         /// <summary>
@@ -120,53 +128,26 @@ namespace uDesktopMascot
         /// <param name="cancellationToken"></param>
         private static async UniTask<GameObject> LoadAndDisplayModel(string path, CancellationToken cancellationToken)
         {
-            // VRMファイルをバイト配列として非同期で読み込み
-            var bytes = await File.ReadAllBytesAsync(path, cancellationToken);
-
-            return await LoadAndDisplayModelFromBytes(bytes, path);
+            return await LoadAndDisplayModelFromPath(path,cancellationToken);
         }
 
         /// <summary>
         ///     バイト配列からVRMモデルをロードして表示する
         /// </summary>
-        /// <param name="bytes">VRMファイルのバイト配列</param>
-        /// <param name="fileName">ファイル名（ログ用）</param>
-        private static async UniTask<GameObject> LoadAndDisplayModelFromBytes(byte[] bytes, string fileName)
+        /// <param name="path"></param>
+        /// <param name="cancellationToken"></param>
+        private static async UniTask<GameObject> LoadAndDisplayModelFromPath(string path,CancellationToken cancellationToken)
         {
-            // VRMファイルをパースしてGltfDataを取得
-            var parsed = new GlbLowLevelParser(fileName, bytes).Parse();
-
-            // VRMDataを作成
-            var vrmData = new VRMData(parsed);
-
-            // VRMImporterContextを作成
-            using var vrmImporter = new VRMImporterContext(vrmData);
-
-            // モデルを非同期で読み込み
-            var instance = await vrmImporter.LoadAsync(new RuntimeOnlyAwaitCaller());
+            // VRMファイルをロード（VRM 0.x および 1.x に対応）
+            Vrm10Instance instance = await Vrm10.LoadPathAsync(path, canLoadVrm0X: true, ct: cancellationToken);
 
             // モデルのGameObjectを取得
-            GameObject model = instance.Root;
-
-            // モデルの位置を設定（原点に配置）
-            model.transform.position = Vector3.zero;
-
-            // Y軸に180度回転
-            model.transform.Rotate(0, 180, 0);
-
-            // モデルのサイズを調整
-            model.transform.localScale = Vector3.one * 3f;
-
+            GameObject model = instance.gameObject;
+            
             // シェーダーをlilToonに置き換える
             ReplaceShadersWithLilToon(model);
 
-            // モデルをアクティブ化
-            model.SetActive(true);
-
-            // すべてのRendererを有効化
-            EnableAllRenderers(model);
-
-            Log.Info("VRMのロードと表示が完了しました: " + fileName);
+            Log.Info("VRMのロードと表示が完了しました: " + path);
 
             return model;
         }
@@ -183,8 +164,8 @@ namespace uDesktopMascot
             if (lilToonTransparentShader == null)
             {
                 // シェーダーが見つからない場合はエラーログを出力し、処理を続行する
-                Log.Warning("lilToonのシェーダーが見つかりません。lilToonが正しくインストールされていることを確認してください。デフォルトのMToonシェーダーを使用します。");
-                // 処理を中断せず、そのままMToonシェーダーを使用する
+                Log.Warning("lilToonのシェーダーが見つかりません。lilToonが正しくインストールされていることを確認してください。デフォルトのシェーダーを使用します。");
+                // 処理を中断せず、そのままデフォルトのシェーダーを使用する
                 return;
             }
 
@@ -198,57 +179,16 @@ namespace uDesktopMascot
 
                 foreach (var material in materials)
                 {
-                    // MToonシェーダーを使用しているマテリアルをチェック
-                    if (material.shader.name.Contains("VRM/MToon"))
-                    {
-                        // シェーダーをlilToonの半透明シェーダーに置き換える
-                        material.shader = lilToonTransparentShader;
+                    // シェーダーをlilToonの半透明シェーダーに置き換える
+                    material.shader = lilToonTransparentShader;
 
-                        // 必要に応じてプロパティを設定
-                        material.SetFloat("_TransparentMode", 2); // 0: Opaque, 1: Cutout, 2: Transparent, etc.
-                        material.SetFloat("_OutlineEnable", 1); // アウトラインを有効化
-                    }
+                    // 必要に応じてプロパティを設定
+                    material.SetFloat("_TransparentMode", 2); // 0: Opaque, 1: Cutout, 2: Transparent, etc.
+                    material.SetFloat("_OutlineEnable", 1); // アウトラインを有効化
                 }
             }
 
             Log.Info("シェーダーの置き換えが完了しました。");
-        }
-
-        /// <summary>
-        ///     モデルにColliderを追加する
-        /// </summary>
-        /// <param name="model"></param>
-        public static void AddCollidersToModel(GameObject model)
-        {
-            // モデルの全てのSkinnedMeshRendererにMeshColliderを追加
-            var skinnedMeshes = model.GetComponentsInChildren<SkinnedMeshRenderer>();
-            foreach (var skinnedMesh in skinnedMeshes)
-            {
-                var collider = skinnedMesh.gameObject.AddComponent<MeshCollider>();
-                collider.sharedMesh = skinnedMesh.sharedMesh;
-                collider.convex = false;
-            }
-        }
-
-        /// <summary>
-        /// モデル内のすべてのRendererコンポーネントを有効化する
-        /// </summary>
-        /// <param name="model">モデルのGameObject</param>
-        private static void EnableAllRenderers(GameObject model)
-        {
-            // SkinnedMeshRendererを有効化
-            var skinnedMeshRenderers = model.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-            foreach (var renderer in skinnedMeshRenderers)
-            {
-                renderer.enabled = true;
-            }
-
-            // MeshRendererを有効化
-            var meshRenderers = model.GetComponentsInChildren<MeshRenderer>(true);
-            foreach (var renderer in meshRenderers)
-            {
-                renderer.enabled = true;
-            }
         }
     }
 }
