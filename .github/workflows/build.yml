@@ -140,5 +140,5 @@ jobs:
         if: matrix.targetPlatform == 'StandaloneWindows64'
         uses: actions/upload-artifact@v4.6.0
         with:
-          name: uDesktopMascot_win64
-          path: "build/uDesktopMascot_win64.exe"
+          name: uDesktopMascot_win64_installer
+          path: "build/uDesktopMascot_win64_installer.exe"
