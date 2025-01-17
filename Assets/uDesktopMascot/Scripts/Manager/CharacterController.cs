@@ -113,13 +113,10 @@ namespace uDesktopMascot
             try
             {
                 _model = await LoadVRM.LoadModel(_cancellationTokenSource.Token);
-                _modelAnimator = _model.GetComponent<Animator>();
-                LoadVRM.UpdateAnimationController(_modelAnimator);
-
-                // モデルにColliderを追加（既にある場合は不要）
-                LoadVRM.AddCollidersToModel(_model);
-
-                _isInitialized = true;
+                
+                // モデルの初期調節
+                OnModelLoaded(_model);
+                
             } catch (Exception e)
             {
                 Log.Error($"モデルの初期化中にエラーが発生しました: {e.Message}");
@@ -181,6 +178,59 @@ namespace uDesktopMascot
                 // 座りモーションまたは立ちモーションに切り替え
                 _modelAnimator.SetBool(Const.IsSitting, false);
             }
+        }
+
+        /// <summary>
+        /// 初期ロードのモデルの表示後の調節
+        /// </summary>
+        /// <param name="model"></param>
+        private void OnModelLoaded(GameObject model)
+        {
+            // モデルを包む空のゲームオブジェクトを作成
+            GameObject modelContainer = new GameObject("ModelContainer");
+
+            // モデルを子オブジェクトに設定
+            model.transform.SetParent(modelContainer.transform, false);
+
+            // モデルのスケールを調整（必要に応じて変更）
+            modelContainer.transform.localScale = Vector3.one * 3f;
+
+            // モデルコンテナの位置を設定
+            modelContainer.transform.position = Vector3.zero;
+
+            // モデルコンテナをカメラの前方に配置
+            Vector3 cameraPosition = _mainCamera.transform.position;
+            Vector3 cameraForward = _mainCamera.transform.forward;
+            float distanceFromCamera = 2.0f; // 距離を調整
+            modelContainer.transform.position = cameraPosition + cameraForward * distanceFromCamera;
+
+            // モデルコンテナをカメラの方向に向ける
+            modelContainer.transform.LookAt(cameraPosition, Vector3.up);
+
+            // モデルコンテナをフィールドに保持
+            _model = modelContainer;
+
+            // アニメータの取得と設定
+            _modelAnimator = _model.GetComponentInChildren<Animator>();
+            LoadVRM.UpdateAnimationController(_modelAnimator);
+
+            _isInitialized = true;
+        }
+        
+        /// <summary>
+        ///    モデルのバウンディングボックスを計算
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        private Bounds CalculateModelBounds(GameObject model)
+        {
+            Renderer[] renderers = model.GetComponentsInChildren<Renderer>();
+            Bounds bounds = new Bounds(model.transform.position, Vector3.zero);
+            foreach (Renderer renderer in renderers)
+            {
+                bounds.Encapsulate(renderer.bounds);
+            }
+            return bounds;
         }
 
         /// <summary>
