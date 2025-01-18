@@ -103,6 +103,18 @@ namespace uDesktopMascot
 
             // アプリ終了時のボイスをロード
             LoadEndVoices(cancellationToken).Forget();
+            
+            LoadSetting();
+        }
+        
+        /// <summary>
+        ///    設定のロード
+        /// </summary>
+        private void LoadSetting()
+        {
+            _audioSource.volume = ApplicationSettings.Instance.Sound.VoiceVolume;
+            
+            Log.Info("ボイスの音量: {0}", _audioSource.volume);
         }
 
         /// <summary>
