@@ -114,6 +114,8 @@ namespace uDesktopMascot
             {
                 _model = await LoadVRM.LoadModel(_cancellationTokenSource.Token);
                 
+                await UniTask.SwitchToMainThread();
+                
                 // モデルの初期調節
                 OnModelLoaded(_model);
                 
@@ -191,13 +193,7 @@ namespace uDesktopMascot
 
             // モデルを子オブジェクトに設定
             model.transform.SetParent(modelContainer.transform, false);
-
-            // モデルのスケールを調整（必要に応じて変更）
-            modelContainer.transform.localScale = Vector3.one * 3f;
-
-            // モデルコンテナの位置を設定
-            modelContainer.transform.position = Vector3.zero;
-
+            
             // モデルコンテナをカメラの前方に配置
             Vector3 cameraPosition = _mainCamera.transform.position;
             Vector3 cameraForward = _mainCamera.transform.forward;
@@ -206,6 +202,20 @@ namespace uDesktopMascot
 
             // モデルコンテナをカメラの方向に向ける
             modelContainer.transform.LookAt(cameraPosition, Vector3.up);
+            
+            var characterApplicationSettings = ApplicationSettings.Instance.Character;
+
+            // モデルのスケールを調整（必要に応じて変更）
+            modelContainer.transform.localScale = Vector3.one * characterApplicationSettings.Scale;
+
+            // モデルコンテナの相対位置を設定
+            modelContainer.transform.position += new Vector3(characterApplicationSettings.PositionX, characterApplicationSettings.PositionY, characterApplicationSettings.PositionZ);
+            
+            // モデルコンテナの相対回転を設定
+            var currentRotation = modelContainer.transform.rotation.eulerAngles;
+            modelContainer.transform.rotation = Quaternion.Euler(currentRotation.x + characterApplicationSettings.RotationX, currentRotation.y + characterApplicationSettings.RotationY, currentRotation.z + characterApplicationSettings.RotationZ);
+            
+            Log.Info("キャラクター設定: スケール {0}, 位置 {1}, 回転 {2}", characterApplicationSettings.Scale, modelContainer.transform.position, modelContainer.transform.rotation.eulerAngles);
 
             // モデルコンテナをフィールドに保持
             _model = modelContainer;

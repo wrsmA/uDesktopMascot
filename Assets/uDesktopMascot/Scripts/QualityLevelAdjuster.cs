@@ -1,5 +1,4 @@
-﻿using Unity.Logging;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace uDesktopMascot
 {

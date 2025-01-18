@@ -37,43 +37,76 @@ namespace uDesktopMascot
         {
             try
             {
-                // StreamingAssetsフォルダが存在するか確認
-                if (Directory.Exists(Application.streamingAssetsPath))
+                GameObject model = null;
+
+                // 設定ファイルからモデルパスを取得
+                var modelPath = ApplicationSettings.Instance.Character.ModelPath;
+
+                if (!string.IsNullOrEmpty(modelPath))
                 {
-                    // StreamingAssetsフォルダ内のVRMファイルを検索
-                    var vrmFiles = Directory.GetFiles(Application.streamingAssetsPath, "*.vrm");
-                    var userVrmFiles = vrmFiles;
+                    Log.Info($"指定されたモデルパス: {modelPath}");
 
-                    if (userVrmFiles.Length > 0)
+                    // StreamingAssets フォルダ内のフルパスを作成
+                    var fullModelPath = Path.Combine(Application.streamingAssetsPath, modelPath);
+
+                    // モデルファイルが存在するか確認
+                    if (File.Exists(fullModelPath))
                     {
-                        // ユーザー指定のVRMファイルを使用（最初のもの）
-                        var path = userVrmFiles[0];
-                        Log.Info($"ユーザー指定のVRMファイルを使用します: {path}");
-
-                        try
-                        {
-                            // VRMファイルをロードしてモデルを表示
-                            return await LoadAndDisplayModel(path, cancellationToken);
-                        } catch (Exception e)
-                        {
-                            Log.Error($"VRMの読み込みまたは表示中にエラーが発生しました: {e.Message}");
-                            // エラーが発生した場合、デフォルトのモデルを表示
-                            Log.Info("デフォルトのモデルを読み込みます。");
-                            return LoadDefaultModel();
-                        }
+                        Log.Info($"指定されたモデルファイルをロードします: {modelPath}");
+                        // 指定されたモデルをロード
+                        model = await LoadAndDisplayModel(fullModelPath, cancellationToken);
+                    } else
+                    {
+                        Log.Warning($"指定されたモデルファイルが見つかりませんでした: {modelPath}");
+                        // この後、他のモデルファイルを探します
                     }
-
-                    // ユーザー指定のVRMファイルが見つからない場合、デフォルトのモデルを使用
-                    Log.Info("ユーザー指定のVRMファイルが見つかりません。デフォルトのモデルを読み込みます。");
-                    return LoadDefaultModel();
+                } else
+                {
+                    Log.Info("モデルパスが指定されていません。");
+                    // この後、他のモデルファイルを探します
                 }
 
-                // StreamingAssetsフォルダが存在しない場合、デフォルトのモデルをロード
-                Log.Info("StreamingAssetsフォルダが見つかりません。デフォルトのモデルを読み込みます。");
-                return LoadDefaultModel();
+                // モデルがまだロードされていない場合、他の VRM ファイルを検索
+                if (model == null)
+                {
+                    // StreamingAssets フォルダが存在するか確認
+                    if (Directory.Exists(Application.streamingAssetsPath))
+                    {
+                        // 他の VRM ファイルを検索
+                        var vrmFiles = Directory.GetFiles(Application.streamingAssetsPath, "*.vrm");
+
+                        if (vrmFiles.Length > 0)
+                        {
+                            // 最初の VRM ファイルを使用
+                            var otherModelPath = vrmFiles[0];
+                            Log.Info($"他のモデルファイルを見つけましたのでロードします: {Path.GetFileName(otherModelPath)}");
+                            model = await LoadAndDisplayModel(otherModelPath, cancellationToken);
+                        } else
+                        {
+                            Log.Warning("他の VRM ファイルが見つかりません。デフォルトのモデルを読み込みます。");
+                            // デフォルトのモデルをロード
+                            model = LoadDefaultModel();
+                        }
+                    } else
+                    {
+                        Log.Warning("StreamingAssets フォルダが見つかりません。デフォルトのモデルを読み込みます。");
+                        // デフォルトのモデルをロード
+                        model = LoadDefaultModel();
+                    }
+                }
+
+                if (model != null)
+                {
+                    Log.Info("モデルのロードと表示が完了しました。");
+                } else
+                {
+                    Log.Error("モデルのロードに失敗しました。");
+                }
+
+                return model;
             } catch (Exception e)
             {
-                Log.Error($"VRMの読み込みまたは表示中にエラーが発生しました: {e.Message}");
+                Log.Error($"VRM の読み込みまたは表示中にエラーが発生しました: {e.Message}");
                 return null;
             }
         }

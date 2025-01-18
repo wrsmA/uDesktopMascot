@@ -600,6 +600,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1a967ffe8654af782bdba606394e167, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  windowController: {fileID: 808887759}
 --- !u!4 &288916653
 Transform:
   m_ObjectHideFlags: 0
@@ -1103,6 +1104,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &808887759 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984, type: 3}
+  m_PrefabInstance: {fileID: 954262559}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb951500192d2430eb3e306480cc2f31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &954262559
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1161,7 +1173,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984, type: 3}
       propertyPath: _alphaValue
-      value: 0.945
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984, type: 3}
       propertyPath: hitTestType
