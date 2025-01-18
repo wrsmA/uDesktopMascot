@@ -168,7 +168,7 @@ namespace uDesktopMascot
             try
             {
                 // lilToonの半透明シェーダーを取得
-                var lilToonTransparentShader = Shader.Find("Hidden/lilToon Transparent");
+                var lilToonTransparentShader = Shader.Find("Hidden/lilToonTransparent");
 
                 if (lilToonTransparentShader == null)
                 {
