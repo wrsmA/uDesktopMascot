@@ -1,0 +1,216 @@
+﻿name: Build and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'タグ名を「v数字.数字.数字」の形式で入力してください（例：v1.0.0）'
+        required: true
+
+jobs:
+  create_tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.get_tag.outputs.tag_name }}
+    steps:
+      - name: タグ名の検証と取得
+        id: get_tag
+        run: |
+          TAG_NAME="${{ github.event.inputs.tag_name }}"
+          if [[ ! "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "エラー: タグ名が有効な形式ではありません。v数字.数字.数字 の形式で入力してください。"
+            exit 1
+          fi
+          echo "::set-output name=tag_name::$TAG_NAME"
+
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: タグが既に存在しないか確認
+        run: |
+          TAG_NAME="${{ steps.get_tag.outputs.tag_name }}"
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "エラー: タグ '$TAG_NAME' は既に存在します。"
+            exit 1
+          fi
+
+      - name: タグを作成してプッシュ
+        env:
+          TAG_NAME: ${{ steps.get_tag.outputs.tag_name }}
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
+
+  check-branch:
+    needs: [create_tag]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: タグ名の確認
+        run: |
+          echo "イベント名: ${{ github.event_name }}"
+          TAG_NAME="${{ needs.create_tag.outputs.tag_name }}"
+          echo "タグ名: $TAG_NAME"
+
+          # タグ名からバージョン番号を取得
+          current_version="${TAG_NAME#v}"
+          echo "現在のバージョン: $current_version"
+
+          # gitから既存のバージョンタグのリストを取得
+          git fetch --tags
+          version_tags=$(git tag -l 'v*')
+          echo "既存のバージョンタグ: $version_tags"
+
+          # タグからバージョン番号を抽出
+          versions=()
+          for tag in $version_tags; do
+            versions+=("${tag#v}")
+          done
+
+          if [ ${#versions[@]} -eq 0 ]; then
+            highest_version="0.0.0"
+          else
+            highest_version=$(printf '%s\n' "${versions[@]}" | sort -V | tail -n1)
+          fi
+          echo "最高の既存バージョン: $highest_version"
+
+          # 現在のバージョンと最高の既存バージョンを比較
+          if [ "$(printf '%s\n' "$highest_version" "$current_version" | sort -V | tail -n1)" != "$current_version" ]; then
+            echo "エラー: 現在のバージョン ($current_version) は最高の既存バージョン ($highest_version) よりも高くありません。"
+            exit 1
+          else
+            echo "現在のバージョン ($current_version) は最高の既存バージョン ($highest_version) よりも高いです。"
+          fi
+
+  build:
+    needs: [check-branch]
+    runs-on: ${{ matrix.runsOn }}
+    strategy:
+      fail-fast: false
+      matrix:
+        targetPlatform:
+          - StandaloneWindows64
+          - StandaloneOSX
+        unityVersion: ['6000.0.31f1']
+        include:
+          - targetPlatform: StandaloneWindows64
+            runsOn: windows-latest
+            modules: windows-il2cpp
+          - targetPlatform: StandaloneOSX
+            runsOn: macos-latest
+            modules: mac-il2cpp
+
+    steps:
+      - name: Unityプロジェクトをチェックアウト
+        uses: actions/checkout@v4.2.2
+
+      - name: LFSファイルリストを作成
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: LFSキャッシュを復元
+        uses: actions/cache@v4.2.0
+        id: lfs-cache
+        with:
+          path: .git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}
+
+      - name: Git LFS Pull
+        run: |
+          git lfs pull
+          git add .
+          git reset --hard
+
+      - name: ビルド情報を設定
+        id: build_info
+        run: |
+          TAG_NAME="${{ needs.create_tag.outputs.tag_name }}"
+          VERSION="${{ needs.check-branch.outputs.current_version }}"
+          REPO_NAME="${GITHUB_REPOSITORY##*/}"
+          if [ "${{ matrix.targetPlatform }}" == "StandaloneWindows64" ]; then
+            PLATFORM="win"
+          elif [ "${{ matrix.targetPlatform }}" == "StandaloneOSX" ]; then
+            PLATFORM="mac"
+          else
+            PLATFORM="unknown"
+          fi
+          ARTIFACT_NAME="${REPO_NAME}_v${VERSION}_${PLATFORM}"
+          echo "artifact_name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4.2.0
+        with:
+          path: Library
+          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-
+
+      - name: ${{ matrix.targetPlatform }} 用のビルドを実行
+        uses: game-ci/unity-builder@v4.3.0
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          targetPlatform: ${{ matrix.targetPlatform }}
+          unityVersion: ${{ matrix.unityVersion }}
+
+      - name: ビルド成果物を圧縮して名前を変更
+        run: |
+          cd build
+          zip -r "${{ steps.build_info.outputs.artifact_name }}.zip" *
+          cd ..
+          mv "build/${{ steps.build_info.outputs.artifact_name }}.zip" "./${{ steps.build_info.outputs.artifact_name }}.zip"
+
+      - name: ${{ matrix.targetPlatform }} 用のビルドをアップロード
+        uses: actions/upload-artifact@v4.6.0
+        with:
+          name: ${{ steps.build_info.outputs.artifact_name }}
+          path: "${{ steps.build_info.outputs.artifact_name }}.zip"
+
+      - name: Inno Setup のセットアップ
+        if: matrix.targetPlatform == 'StandaloneWindows64'
+        uses: Minionguyjpro/Inno-Setup-Action@v1.0.0
+        with:
+          path: 'setup.iss'
+
+      - name: インストーラーをアップロード
+        if: matrix.targetPlatform == 'StandaloneWindows64'
+        uses: actions/upload-artifact@v4.6.0
+        with:
+          name: uDesktopMascot_win64_installer
+          path: "build/uDesktopMascot_win64_installer.exe"
+
+  release:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: コードをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: アーティファクトをダウンロード
+        uses: actions/download-artifact@v3
+        with:
+          path: ./artifacts
+
+      - name: タグ名を取得
+        id: vars
+        run: |
+          TAG_NAME="${{ needs.create_tag.outputs.tag_name }}"
+          echo "リリースタグ名は '${TAG_NAME}' です"
+          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
+
+      - name: ドラフトリリースを作成し、アーティファクトをアップロード
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.vars.outputs.tag_name }}
+          draft: true
+          files: artifacts/**/*
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
