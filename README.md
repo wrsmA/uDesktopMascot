@@ -55,10 +55,12 @@
 * デフォルトのキャラクターアニメーションは、[Unity Muse Animate](https://muse.unity.com/ja-jp/explore)を用いて作成されています。
 * フォントは[Noto Sans Japanese](https://fonts.google.com/noto/specimen/Noto+Sans+JP?lang=ja_Jpan)です。[SIL OPEN FONT LICENSE Version 1.1](https://fonts.google.com/noto/specimen/Noto+Sans+JP/license?lang=ja_Jpan)に基づきNoto Sans JPフォントを再配布するものです。フォントの著作権は元の作者（Google）にあります。
 * デフォルトボイスは、[COEIROINK:つくよみちゃん](https://coeiroink.com/character/audio-character/tsukuyomi-chan)の音声を使用しています。使用方法については、COEIROINK側に事前に確認済みです
+* ボタンアイコンは、[MingCute](https://github.com/MidraLab/MingCute)を使用しています。
 
 ## 制作者クレジット
 * モデル: 「アオゾラ」様
 * BGM: MidraLab(eisuke)
+* ソフトウェアアイコン: やむちゃ様
 
 ## 3rd Party Notices
 
