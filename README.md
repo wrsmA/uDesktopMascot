@@ -65,3 +65,7 @@
 ## 3rd Party Notices
 
 See [NOTICE](./NOTICE.md).
+
+## sponsor
+- Luna
+- uezo
