@@ -122,7 +122,7 @@ jobs:
           unityVersion: ${{ matrix.unityVersion }}
           buildName: 'uDesktopMascot'
 
-      - name: ビルド成果物を圧縮して名前を変更
+      - name: Change build folder name
         run: |
           cd build
           mv "${{ matrix.targetPlatform }}" "uDesktopMascot"
