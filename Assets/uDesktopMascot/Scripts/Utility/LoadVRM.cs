@@ -52,14 +52,11 @@ namespace uDesktopMascot
         /// <summary>
         /// モデルをロードする
         /// </summary>
-        public static async UniTask<GameObject> LoadModel(CancellationToken cancellationToken)
+        public static async UniTask<GameObject> LoadModelAsync(string modelPath,CancellationToken cancellationToken)
         {
             try
             {
                 GameObject model = null;
-
-                // 設定ファイルからモデルパスを取得
-                var modelPath = ApplicationSettings.Instance.Character.ModelPath;
 
                 if (!string.IsNullOrEmpty(modelPath))
                 {

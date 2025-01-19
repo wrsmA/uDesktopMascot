@@ -112,7 +112,7 @@ namespace uDesktopMascot
         {
             try
             {
-                _model = await LoadVRM.LoadModel(_cancellationTokenSource.Token);
+                _model = await LoadCharacterModel.LoadModel(_cancellationTokenSource.Token);
                 
                 await UniTask.SwitchToMainThread();
                 

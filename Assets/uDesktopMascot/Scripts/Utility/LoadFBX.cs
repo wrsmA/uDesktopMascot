@@ -1,8 +1,10 @@
 ﻿using System.IO;
 using System.Collections.Generic;
+using System.Threading;
 using Assimp;
 using UnityEngine;
-using Unity.Logging; // Unity.Logging を使用
+using Unity.Logging;
+using Cysharp.Threading.Tasks;
 
 // 名前空間エイリアスを追加
 using AssimpMaterial = Assimp.Material;
@@ -18,11 +20,12 @@ namespace uDesktopMascot
     public static class LoadFBX
     {
         /// <summary>
-        /// 指定されたパスのFBXモデルを読み込み、GameObjectを返します。
+        /// 指定されたパスのFBXモデルを非同期的に読み込み、GameObjectを返します。
         /// </summary>
         /// <param name="modelPath">モデルファイルのパス（StreamingAssetsからの相対パス）</param>
-        /// <returns>読み込まれたモデルのGameObject</returns>
-        public static GameObject LoadModel(string modelPath)
+        /// <param name="cancellationToken"></param>
+        /// <returns>読み込まれたモデルのGameObjectを返すUniTask</returns>
+        public static async UniTask<GameObject> LoadModelAsync(string modelPath,CancellationToken cancellationToken)
         {
             // モデルファイルのフルパスを作成
             string fullPath = Path.Combine(Application.streamingAssetsPath, modelPath);
@@ -34,34 +37,94 @@ namespace uDesktopMascot
                 return null;
             }
 
-            // Assimpのインポーターを作成
-            AssimpContext importer = new AssimpContext();
+            // 重い処理をバックグラウンドスレッドで実行
+            ModelData modelData = await UniTask.RunOnThreadPool(async () =>
+            {
+                // Assimpのインポーターを作成
+                AssimpContext importer = new AssimpContext();
 
-            // シーンをインポート（必要に応じてPostProcessを調整）
-            Scene scene;
-            try
+                // シーンをインポート（必要に応じてPostProcessを調整）
+                Scene scene;
+                try
+                {
+                    scene = importer.ImportFile(fullPath, PostProcessPreset.TargetRealTimeMaximumQuality);
+                }
+                catch (System.Exception ex)
+                {
+                    Log.Error("[LoadFBX] モデルのインポート中にエラーが発生しました: {message}", ex.Message);
+                    return null;
+                }
+
+                if (scene == null || !scene.HasMeshes)
+                {
+                    Log.Error("[LoadFBX] モデルのインポートに失敗しました。");
+                    return null;
+                }
+
+                Log.Info("[LoadFBX] モデルのインポートに成功しました。");
+
+                // モデルデータを保持するクラスを作成
+                ModelData data = new ModelData
+                {
+                    Name = Path.GetFileNameWithoutExtension(modelPath),
+                    Meshes = new List<MeshData>(),
+                    Materials = new List<MaterialData>()
+                };
+
+                // マテリアルを処理
+                foreach (var assimpMaterial in scene.Materials)
+                {
+                    var materialData = await ProcessMaterialAsync(assimpMaterial, Path.GetDirectoryName(fullPath));
+                    data.Materials.Add(materialData);
+                }
+
+                // ノードを処理
+                ProcessNode(scene.RootNode, scene, data);
+
+                return data;
+            }, cancellationToken: cancellationToken);
+
+            // バックグラウンド処理でエラーがあった場合
+            if (modelData == null)
             {
-                scene = importer.ImportFile(fullPath, PostProcessPreset.TargetRealTimeMaximumQuality);
-            }
-            catch (System.Exception ex)
-            {
-                Log.Error("[LoadFBX] モデルのインポート中にエラーが発生しました: {message}", ex.Message);
                 return null;
             }
 
-            if (scene == null || !scene.HasMeshes)
+            // メインスレッドでGameObjectを生成
+            GameObject modelRoot = new GameObject(modelData.Name);
+
+            // メッシュとマテリアルを設定
+            foreach (var meshData in modelData.Meshes)
             {
-                Log.Error("[LoadFBX] モデルのインポートに失敗しました。");
-                return null;
+                GameObject meshObject = new GameObject(meshData.Name);
+                meshObject.transform.SetParent(modelRoot.transform, false);
+
+                MeshFilter meshFilter = meshObject.AddComponent<MeshFilter>();
+                MeshRenderer meshRenderer = meshObject.AddComponent<MeshRenderer>();
+
+                // UnityEngine.Meshを作成
+                UnityEngineMesh unityMesh = new UnityEngineMesh
+                {
+                    name = meshData.Name,
+                    vertices = meshData.Vertices,
+                    normals = meshData.Normals,
+                    uv = meshData.UVs,
+                    colors = meshData.Colors,
+                    triangles = meshData.Indices
+                };
+                unityMesh.RecalculateBounds();
+
+                meshFilter.mesh = unityMesh;
+
+                // マテリアルを作成
+                UnityEngineMaterial material = new UnityEngineMaterial(Shader.Find("Standard"));
+                material.color = meshData.Material.Color;
+                if (meshData.Material.Texture != null)
+                {
+                    material.mainTexture = meshData.Material.Texture;
+                }
+                meshRenderer.material = material;
             }
-
-            Log.Info("[LoadFBX] モデルのインポートに成功しました。");
-
-            // モデルのルートGameObjectを作成
-            GameObject modelRoot = new GameObject(Path.GetFileNameWithoutExtension(modelPath));
-
-            // シーン内のノードを再帰的に処理
-            ProcessNode(scene.RootNode, scene, modelRoot, Path.GetDirectoryName(fullPath));
 
             Log.Info("[LoadFBX] モデルの読み込みとGameObjectの作成が完了しました。");
 
@@ -69,116 +132,76 @@ namespace uDesktopMascot
         }
 
         /// <summary>
-        /// シーンのノードを再帰的に処理してGameObjectを構築する
+        /// ノードを処理してメッシュデータを収集
         /// </summary>
-        /// <param name="node">現在のノード</param>
-        /// <param name="scene">Assimpのシーンデータ</param>
-        /// <param name="parentObject">親のGameObject</param>
-        /// <param name="basePath">モデルファイルのディレクトリパス</param>
-        private static void ProcessNode(Node node, Scene scene, GameObject parentObject, string basePath)
+        private static void ProcessNode(Node node, Scene scene, ModelData modelData)
         {
-            // 現在のノードのGameObjectを作成
-            GameObject nodeObject = new GameObject(node.Name);
-            nodeObject.transform.SetParent(parentObject.transform, false);
-
-            // ノードのメッシュを処理
             foreach (int meshIndex in node.MeshIndices)
             {
                 AssimpMesh mesh = scene.Meshes[meshIndex];
-
-                // UnityのMeshを作成
-                UnityEngineMesh unityMesh = ConvertAssimpMeshToUnityMesh(mesh);
-
-                // メッシュ用のGameObjectを作成
-                GameObject meshObject = new GameObject(mesh.Name);
-                meshObject.transform.SetParent(nodeObject.transform, false);
-
-                // MeshFilterとMeshRendererを追加
-                MeshFilter meshFilter = meshObject.AddComponent<MeshFilter>();
-                MeshRenderer meshRenderer = meshObject.AddComponent<MeshRenderer>();
-
-                // Meshを設定
-                meshFilter.mesh = unityMesh;
-
-                // マテリアルを取得または作成
-                UnityEngineMaterial material = CreateMaterialFromAssimp(scene.Materials[mesh.MaterialIndex], basePath);
-
-                // マテリアルを設定
-                meshRenderer.material = material;
-
-                Log.Info("[LoadFBX] メッシュ '{meshName}' を処理しました。", mesh.Name);
+                MeshData meshData = ConvertAssimpMesh(mesh, modelData.Materials[mesh.MaterialIndex]);
+                modelData.Meshes.Add(meshData);
             }
 
-            // 子ノードを再帰的に処理
             foreach (Node childNode in node.Children)
             {
-                ProcessNode(childNode, scene, nodeObject, basePath);
+                ProcessNode(childNode, scene, modelData);
             }
         }
 
         /// <summary>
-        /// AssimpのMeshをUnityのMeshに変換する
+        /// AssimpのMeshをMeshDataに変換する
         /// </summary>
-        /// <param name="mesh">AssimpのMesh</param>
-        /// <returns>UnityのMesh</returns>
-        private static UnityEngineMesh ConvertAssimpMeshToUnityMesh(AssimpMesh mesh)
+        private static MeshData ConvertAssimpMesh(AssimpMesh mesh, MaterialData materialData)
         {
-            UnityEngineMesh unityMesh = new UnityEngineMesh
+            MeshData meshData = new MeshData
             {
-                name = mesh.Name
+                Name = mesh.Name,
+                Material = materialData
             };
 
-            // 頂点座標を設定
-            Vector3[] vertices = new Vector3[mesh.VertexCount];
+            // 頂点座標
+            meshData.Vertices = new Vector3[mesh.VertexCount];
             for (int i = 0; i < mesh.VertexCount; i++)
             {
                 Vector3D vertex = mesh.Vertices[i];
-                vertices[i] = new Vector3(vertex.X, vertex.Y, vertex.Z);
+                meshData.Vertices[i] = new Vector3(vertex.X, vertex.Y, vertex.Z);
             }
-            unityMesh.vertices = vertices;
 
-            // 法線を設定
+            // 法線
             if (mesh.HasNormals)
             {
-                Vector3[] normals = new Vector3[mesh.VertexCount];
+                meshData.Normals = new Vector3[mesh.VertexCount];
                 for (int i = 0; i < mesh.VertexCount; i++)
                 {
                     Vector3D normal = mesh.Normals[i];
-                    normals[i] = new Vector3(normal.X, normal.Y, normal.Z);
+                    meshData.Normals[i] = new Vector3(normal.X, normal.Y, normal.Z);
                 }
-                unityMesh.normals = normals;
-            }
-            else
-            {
-                unityMesh.RecalculateNormals();
-                Log.Warning("[LoadFBX] メッシュ '{meshName}' に法線がないため、再計算しました。", mesh.Name);
             }
 
-            // UV座標を設定
+            // UV座標
             if (mesh.HasTextureCoords(0))
             {
-                Vector2[] uvs = new Vector2[mesh.VertexCount];
+                meshData.UVs = new Vector2[mesh.VertexCount];
                 for (int i = 0; i < mesh.VertexCount; i++)
                 {
                     Vector3D uv = mesh.TextureCoordinateChannels[0][i];
-                    uvs[i] = new Vector2(uv.X, uv.Y);
+                    meshData.UVs[i] = new Vector2(uv.X, uv.Y);
                 }
-                unityMesh.uv = uvs;
             }
 
-            // 頂点カラーを設定（必要に応じて）
+            // 頂点カラー
             if (mesh.HasVertexColors(0))
             {
-                Color[] colors = new Color[mesh.VertexCount];
+                meshData.Colors = new Color[mesh.VertexCount];
                 for (int i = 0; i < mesh.VertexCount; i++)
                 {
                     Color4D color = mesh.VertexColorChannels[0][i];
-                    colors[i] = new Color(color.R, color.G, color.B, color.A);
+                    meshData.Colors[i] = new Color(color.R, color.G, color.B, color.A);
                 }
-                unityMesh.colors = colors;
             }
 
-            // 三角形インデックスを設定
+            // インデックス
             List<int> indices = new List<int>();
             foreach (Face face in mesh.Faces)
             {
@@ -188,62 +211,42 @@ namespace uDesktopMascot
                     indices.Add(face.Indices[1]);
                     indices.Add(face.Indices[2]);
                 }
-                else
-                {
-                    Log.Warning("[LoadFBX] メッシュ '{meshName}' に非三角形面が含まれています。頂点数: {vertexCount}", mesh.Name, face.IndexCount);
-                }
             }
-            unityMesh.triangles = indices.ToArray();
+            meshData.Indices = indices.ToArray();
 
-            unityMesh.RecalculateBounds();
-
-            return unityMesh;
+            return meshData;
         }
 
         /// <summary>
-        /// AssimpのマテリアルをUnityのマテリアルに変換する
+        /// AssimpのマテリアルをMaterialDataに非同期で変換する
         /// </summary>
-        /// <param name="assimpMaterial">Assimpのマテリアル</param>
-        /// <param name="basePath">モデルファイルのディレクトリパス</param>
-        /// <returns>Unityのマテリアル</returns>
-        private static UnityEngineMaterial CreateMaterialFromAssimp(AssimpMaterial assimpMaterial, string basePath)
+        private static async UniTask<MaterialData> ProcessMaterialAsync(AssimpMaterial assimpMaterial, string basePath)
         {
-            // シンプルなStandardシェーダーを使用
-            UnityEngineMaterial material = new UnityEngineMaterial(Shader.Find("Standard"));
+            MaterialData materialData = new MaterialData();
 
-            // マテリアル名のログ
-            Log.Info("[LoadFBX] マテリアル '{materialName}' を処理します。", assimpMaterial.Name);
-
-            // Diffuseカラーを適用
+            // カラー
             if (assimpMaterial.HasColorDiffuse)
             {
-                Color color = new Color(assimpMaterial.ColorDiffuse.R,
-                                        assimpMaterial.ColorDiffuse.G,
-                                        assimpMaterial.ColorDiffuse.B,
-                                        assimpMaterial.ColorDiffuse.A);
-                material.color = color;
+                materialData.Color = new Color(assimpMaterial.ColorDiffuse.R,
+                                               assimpMaterial.ColorDiffuse.G,
+                                               assimpMaterial.ColorDiffuse.B,
+                                               assimpMaterial.ColorDiffuse.A);
+            }
+            else
+            {
+                materialData.Color = Color.white;
             }
 
-            // テクスチャを適用
+            // テクスチャ
             if (assimpMaterial.HasTextureDiffuse)
             {
                 string texturePath = assimpMaterial.TextureDiffuse.FilePath;
-
-                // 相対パスをフルパスに変換
                 string fullTexturePath = Path.Combine(basePath, texturePath);
 
                 if (File.Exists(fullTexturePath))
                 {
-                    Texture2D texture = LoadTexture(fullTexturePath);
-                    if (texture != null)
-                    {
-                        material.mainTexture = texture;
-                        Log.Info("[LoadFBX] テクスチャ '{texturePath}' を読み込みました。", texturePath);
-                    }
-                    else
-                    {
-                        Log.Warning("[LoadFBX] テクスチャのロードに失敗しました: {path}", fullTexturePath);
-                    }
+                    byte[] data = await ReadAllBytesAsync(fullTexturePath);
+                    materialData.TextureData = data;
                 }
                 else
                 {
@@ -251,33 +254,53 @@ namespace uDesktopMascot
                 }
             }
 
-            return material;
+            return materialData;
         }
 
         /// <summary>
-        /// テクスチャをロードする
+        /// ファイルからすべてのバイトを非同期で読み込む
         /// </summary>
-        /// <param name="path">テクスチャファイルのフルパス</param>
-        /// <returns>ロードされたテクスチャ</returns>
-        private static Texture2D LoadTexture(string path)
+        private static async UniTask<byte[]> ReadAllBytesAsync(string path)
         {
-            if (!File.Exists(path))
-            {
-                Log.Warning("[LoadFBX] テクスチャファイルが見つかりません: {path}", path);
-                return null;
-            }
+            await using FileStream sourceStream = new FileStream(path,
+                FileMode.Open, FileAccess.Read, FileShare.Read, 4096, useAsync: true);
+            byte[] result = new byte[sourceStream.Length];
+            await sourceStream.ReadAsync(result, 0, (int)sourceStream.Length);
+            return result;
+        }
 
-            byte[] data = File.ReadAllBytes(path);
-            Texture2D texture = new Texture2D(2, 2);
-            if (texture.LoadImage(data))
-            {
-                return texture;
-            }
-            else
-            {
-                Log.Warning("[LoadFBX] テクスチャのロードに失敗しました: {path}", path);
-                return null;
-            }
+        /// <summary>
+        /// モデルデータを保持するクラス
+        /// </summary>
+        private class ModelData
+        {
+            public string Name;
+            public List<MeshData> Meshes;
+            public List<MaterialData> Materials;
+        }
+
+        /// <summary>
+        /// メッシュデータを保持するクラス
+        /// </summary>
+        private class MeshData
+        {
+            public string Name;
+            public Vector3[] Vertices;
+            public Vector3[] Normals;
+            public Vector2[] UVs;
+            public Color[] Colors;
+            public int[] Indices;
+            public MaterialData Material;
+        }
+
+        /// <summary>
+        /// マテリアルデータを保持するクラス
+        /// </summary>
+        private class MaterialData
+        {
+            public Color Color;
+            public byte[] TextureData;
+            public Texture2D Texture;
         }
     }
 }
