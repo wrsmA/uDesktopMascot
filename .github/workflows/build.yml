@@ -76,11 +76,9 @@ jobs:
           - targetPlatform: StandaloneWindows64
             runsOn: windows-latest
             modules: windows-il2cpp
-            buildName: uDesktopMascot
           - targetPlatform: StandaloneOSX
             runsOn: macos-latest
             modules: mac-il2cpp
-            buildName: uDesktopMascot
 
     steps:
       - name: Check out my unity project.
@@ -122,6 +120,7 @@ jobs:
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
           unityVersion: ${{ matrix.unityVersion }}
+          buildName: 'uDesktopMascot'
 
       - name: Upload the Build for ${{ matrix.targetPlatform }}
         uses: actions/upload-artifact@v4.6.0
