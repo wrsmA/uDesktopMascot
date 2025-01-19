@@ -25,7 +25,7 @@ namespace uDesktopMascot
         /// <param name="modelPath">モデルファイルのパス（StreamingAssetsからの相対パス）</param>
         /// <param name="cancellationToken"></param>
         /// <returns>読み込まれたモデルのGameObjectを返すUniTask</returns>
-        public static async UniTask<GameObject> LoadModelAsync(string modelPath,CancellationToken cancellationToken)
+        public static async UniTask<GameObject> LoadModelAsync(string modelPath, CancellationToken cancellationToken)
         {
             // モデルファイルのフルパスを作成
             string fullPath = Path.Combine(Application.streamingAssetsPath, modelPath);
@@ -48,8 +48,7 @@ namespace uDesktopMascot
                 try
                 {
                     scene = importer.ImportFile(fullPath, PostProcessPreset.TargetRealTimeMaximumQuality);
-                }
-                catch (System.Exception ex)
+                } catch (System.Exception ex)
                 {
                     Log.Error("[LoadFBX] モデルのインポート中にエラーが発生しました: {message}", ex.Message);
                     return null;
@@ -116,13 +115,34 @@ namespace uDesktopMascot
 
                 meshFilter.mesh = unityMesh;
 
-                // マテリアルを作成
-                UnityEngineMaterial material = new UnityEngineMaterial(Shader.Find("Standard"));
-                material.color = meshData.Material.Color;
-                if (meshData.Material.Texture != null)
+                // MToon10 シェーダーを使用してマテリアルを作成
+                Shader mtoonShader = Shader.Find("VRM10/MToon10");
+                if (mtoonShader == null)
                 {
-                    material.mainTexture = meshData.Material.Texture;
+                    Log.Error("[LoadFBX] MToon10 シェーダーが見つかりません。UniVRM パッケージが正しくインポートされているか確認してください。");
+                    // フォールバックとして Standard シェーダーを使用
+                    mtoonShader = Shader.Find("Standard");
                 }
+
+                UnityEngineMaterial material = new UnityEngineMaterial(mtoonShader);
+
+                // カラーを設定
+                material.SetColor("_Color", meshData.Material.Color);
+
+                if (meshData.Material.TextureData != null)
+                {
+                    Texture2D texture = new Texture2D(2, 2);
+                    if (texture.LoadImage(meshData.Material.TextureData))
+                    {
+                        // テクスチャを設定
+                        material.SetTexture("_MainTex", texture);
+                    }
+                    else
+                    {
+                        Log.Warning("[LoadFBX] テクスチャのロードに失敗しました。");
+                    }
+                }
+
                 meshRenderer.material = material;
             }
 
@@ -212,6 +232,7 @@ namespace uDesktopMascot
                     indices.Add(face.Indices[2]);
                 }
             }
+
             meshData.Indices = indices.ToArray();
 
             return meshData;
@@ -224,15 +245,15 @@ namespace uDesktopMascot
         {
             MaterialData materialData = new MaterialData();
 
-            // カラー
+            // カラーの設定
             if (assimpMaterial.HasColorDiffuse)
             {
-                materialData.Color = new Color(assimpMaterial.ColorDiffuse.R,
-                                               assimpMaterial.ColorDiffuse.G,
-                                               assimpMaterial.ColorDiffuse.B,
-                                               assimpMaterial.ColorDiffuse.A);
-            }
-            else
+                materialData.Color = new Color(
+                    assimpMaterial.ColorDiffuse.R,
+                    assimpMaterial.ColorDiffuse.G,
+                    assimpMaterial.ColorDiffuse.B,
+                    assimpMaterial.ColorDiffuse.A);
+            } else
             {
                 materialData.Color = Color.white;
             }
@@ -241,16 +262,73 @@ namespace uDesktopMascot
             if (assimpMaterial.HasTextureDiffuse)
             {
                 string texturePath = assimpMaterial.TextureDiffuse.FilePath;
-                string fullTexturePath = Path.Combine(basePath, texturePath);
+                Log.Info("[LoadFBX] 取得したテクスチャパス: {0}", texturePath);
 
+                // パスの区切り文字を統一
+                texturePath = texturePath.Replace('\\', Path.DirectorySeparatorChar)
+                    .Replace('/', Path.DirectorySeparatorChar)
+                    .Trim();
+
+                // テクスチャファイル名を取得
+                string textureFileName = Path.GetFileName(texturePath);
+                Log.Info("[LoadFBX] テクスチャファイル名: {0}", textureFileName);
+
+                // FBX ファイルのディレクトリを取得
+                string fbxDirectory = basePath;
+
+                // テクスチャパスが絶対パスか相対パスかを確認
+                string fullTexturePath = null;
+                if (Path.IsPathRooted(texturePath))
+                {
+                    // 絶対パスの場合、FBX ファイルのディレクトリに基づいて相対パスを再構築
+                    Log.Warning("[LoadFBX] 絶対パスが検出されました。相対パスに変換します。");
+
+                    // テクスチャファイル名のみを使用して、検索ディレクトリ内を探す
+                    fullTexturePath = Path.Combine(fbxDirectory, "..", "textures", textureFileName);
+                } else
+                {
+                    // 相対パスの場合、FBX ファイルのディレクトリを基準に解決
+                    fullTexturePath = Path.Combine(fbxDirectory, texturePath);
+                }
+
+                // フルパスを正規化
+                fullTexturePath = Path.GetFullPath(fullTexturePath);
+                Log.Info("[LoadFBX] 解決したテクスチャのフルパス: {0}", fullTexturePath);
+
+                // テクスチャファイルが存在するか確認
                 if (File.Exists(fullTexturePath))
                 {
+                    Log.Info("[LoadFBX] テクスチャファイルを発見: {0}", fullTexturePath);
+
                     byte[] data = await ReadAllBytesAsync(fullTexturePath);
                     materialData.TextureData = data;
-                }
-                else
+                } else
                 {
-                    Log.Warning("[LoadFBX] テクスチャファイルが見つかりません: {path}", fullTexturePath);
+                    Log.Warning("[LoadFBX] テクスチャファイルが見つかりません: {0}", fullTexturePath);
+
+                    // 追加で、テクスチャファイル名を使用して検索ディレクトリを探索
+                    List<string> searchDirectories = new List<string>
+                    {
+                        fbxDirectory, // FBX ファイルのディレクトリ
+                        Path.Combine(fbxDirectory, "..", "textures"), // FBX の親ディレクトリの "textures" フォルダ
+                        Path.Combine(Application.streamingAssetsPath,
+                            "textures") // "Assets/StreamingAssets/textures" フォルダ
+                    };
+
+                    foreach (string directory in searchDirectories)
+                    {
+                        string potentialPath = Path.Combine(directory, textureFileName);
+                        Log.Info("[LoadFBX] 追加検索中のテクスチャパス: {0}", potentialPath);
+
+                        if (File.Exists(potentialPath))
+                        {
+                            Log.Info("[LoadFBX] テクスチャファイルを発見: {0}", potentialPath);
+
+                            byte[] data = await ReadAllBytesAsync(potentialPath);
+                            materialData.TextureData = data;
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -262,10 +340,38 @@ namespace uDesktopMascot
         /// </summary>
         private static async UniTask<byte[]> ReadAllBytesAsync(string path)
         {
-            await using FileStream sourceStream = new FileStream(path,
-                FileMode.Open, FileAccess.Read, FileShare.Read, 4096, useAsync: true);
-            byte[] result = new byte[sourceStream.Length];
-            await sourceStream.ReadAsync(result, 0, (int)sourceStream.Length);
+            // Unity のバージョンが .NET Standard 2.0 以上の場合
+            if (File.Exists(path))
+            {
+                return await File.ReadAllBytesAsync(path);
+            }
+
+            // Unity 2017 以前の場合
+            await using FileStream sourceStream = new FileStream(
+                path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true);
+            long fileLength = sourceStream.Length;
+            byte[] result = new byte[fileLength];
+
+            int totalBytesRead = 0;
+
+            while (totalBytesRead < fileLength)
+            {
+                var bytesRead = await sourceStream.ReadAsync(result, totalBytesRead,
+                    (int)(fileLength - totalBytesRead));
+                if (bytesRead == 0)
+                {
+                    break; // ストリームの終端に達した場合
+                }
+
+                totalBytesRead += bytesRead;
+            }
+
+            if (totalBytesRead != fileLength)
+            {
+                Log.Warning("[LoadFBX] 予期しないEOFによりファイルの読み込みが完了しませんでした: {path}", path);
+                // 必要に応じて、部分的に読み込んだデータを処理するか、エラーを返す
+            }
+
             return result;
         }
 
