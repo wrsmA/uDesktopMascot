@@ -160,6 +160,7 @@ jobs:
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
           unityVersion: ${{ matrix.unityVersion }}
+          buildName: 'uDesktopMascot'
 
       - name: ビルド成果物を圧縮して名前を変更
         run: |
