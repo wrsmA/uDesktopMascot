@@ -124,9 +124,8 @@ jobs:
 
       - name: ビルド成果物を圧縮して名前を変更
         run: |
-          REPO_NAME="${GITHUB_REPOSITORY##*/}"
           cd build
-          mv "${{ matrix.targetPlatform }}" "${REPO_NAME}"
+          mv "${{ matrix.targetPlatform }}" "uDesktopMascot"
           cd ..
 
       - name: Upload the Build for ${{ matrix.targetPlatform }}
