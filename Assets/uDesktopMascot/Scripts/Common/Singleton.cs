@@ -1,4 +1,7 @@
-﻿namespace uDesktopMascot
+﻿using Unity.Logging;
+using UnityEngine;
+
+namespace uDesktopMascot
 {
     /// <summary>
     ///     シングルトンパターンの基底クラス
@@ -8,22 +11,29 @@
     {
         private static T _instance;
         private static readonly object _lock = new();
+        
+#if UNITY_EDITOR
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void DomainReset()
+        {
+            Log.Debug("[Singleton<" + typeof(T).Name + ">] DomainReset called.");
+            _instance = null;
+        }
+#endif
 
         public static T Instance
         {
             get
             {
-                if (_instance == null)
+                if (_instance != null)
                 {
-                    lock (_lock)
-                    {
-                        if (_instance == null)
-                        {
-                            _instance = new T();
-                        }
-                    }
+                    return _instance;
                 }
 
+                lock (_lock)
+                {
+                    _instance ??= new T();
+                }
                 return _instance;
             }
         }

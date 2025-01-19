@@ -9,7 +9,7 @@ namespace uDesktopMascot
     /// <summary>
     ///     BGMを制御するクラス
     /// </summary>
-    public class BGMController : SingletonMonoBehaviour<BGMController>
+    public partial class BGMController : SingletonMonoBehaviour<BGMController>
     {
         /// <summary>
         ///     BGMのリスト
@@ -57,9 +57,20 @@ namespace uDesktopMascot
             _audioSource.loop = true;
 
             _cancellationTokenSource = new CancellationTokenSource();
+            
+            LoadSetting();
 
             // BGMをロード
             LoadBGMAsync(_cancellationTokenSource.Token).Forget();
+        }
+
+        /// <summary>
+        /// 設定のロード
+        /// </summary>
+        private void LoadSetting()
+        {
+            _audioSource.volume = ApplicationSettings.Instance.Sound.BGMVolume;
+            Log.Info("BGMの音量: {0}", _audioSource.volume);
         }
 
         /// <summary>

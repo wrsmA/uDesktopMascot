@@ -5,6 +5,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Unity.Logging;
+using UniGLTF;
 using UniVRM10;
 using Object = UnityEngine.Object;
 
@@ -26,8 +27,26 @@ namespace uDesktopMascot
         /// <param name="animator"></param>
         public static void UpdateAnimationController(Animator animator)
         {
-            animator.runtimeAnimatorController =
-                Resources.Load<RuntimeAnimatorController>("CharacterAnimationController");
+            if (animator == null)
+            {
+                Log.Error("Animator が null です。アニメーションコントローラーを設定できません。");
+                return;
+            }
+
+            var controller = Resources.Load<RuntimeAnimatorController>("CharacterAnimationController");
+            if (controller != null)
+            {
+                animator.runtimeAnimatorController = controller;
+                Log.Info("アニメーションコントローラーを設定しました。");
+
+                if (animator.avatar == null)
+                {
+                    Log.Warning("Animator の avatar が設定されていません。アニメーションが正しく再生されない可能性があります。");
+                }
+            } else
+            {
+                Log.Error("CharacterAnimationController が Resources に見つかりませんでした。アニメーションコントローラーが正しく設定されているか確認してください。");
+            }
         }
 
         /// <summary>
@@ -37,43 +56,81 @@ namespace uDesktopMascot
         {
             try
             {
-                // StreamingAssetsフォルダが存在するか確認
-                if (Directory.Exists(Application.streamingAssetsPath))
+                GameObject model = null;
+
+                // 設定ファイルからモデルパスを取得
+                var modelPath = ApplicationSettings.Instance.Character.ModelPath;
+
+                if (!string.IsNullOrEmpty(modelPath))
                 {
-                    // StreamingAssetsフォルダ内のVRMファイルを検索
-                    var vrmFiles = Directory.GetFiles(Application.streamingAssetsPath, "*.vrm");
-                    var userVrmFiles = vrmFiles;
+                    Log.Info($"指定されたモデルパス: {modelPath}");
 
-                    if (userVrmFiles.Length > 0)
+                    // StreamingAssets フォルダ内のフルパスを作成
+                    var fullModelPath = Path.Combine(Application.streamingAssetsPath, modelPath);
+
+                    // モデルファイルが存在するか確認
+                    if (File.Exists(fullModelPath))
                     {
-                        // ユーザー指定のVRMファイルを使用（最初のもの）
-                        var path = userVrmFiles[0];
-                        Log.Info($"ユーザー指定のVRMファイルを使用します: {path}");
-
-                        try
-                        {
-                            // VRMファイルをロードしてモデルを表示
-                            return await LoadAndDisplayModel(path, cancellationToken);
-                        } catch (Exception e)
-                        {
-                            Log.Error($"VRMの読み込みまたは表示中にエラーが発生しました: {e.Message}");
-                            // エラーが発生した場合、デフォルトのモデルを表示
-                            Log.Info("デフォルトのモデルを読み込みます。");
-                            return LoadDefaultModel();
-                        }
+                        Log.Info($"指定されたモデルファイルをロードします: {modelPath}");
+                        // 指定されたモデルをロード
+                        model = await LoadAndDisplayModel(fullModelPath, cancellationToken);
+                    } else
+                    {
+                        Log.Warning($"指定されたモデルファイルが見つかりませんでした: {modelPath}");
+                        // この後、他のモデルファイルを探します
                     }
-
-                    // ユーザー指定のVRMファイルが見つからない場合、デフォルトのモデルを使用
-                    Log.Info("ユーザー指定のVRMファイルが見つかりません。デフォルトのモデルを読み込みます。");
-                    return LoadDefaultModel();
+                } else
+                {
+                    Log.Info("モデルパスが指定されていません。");
+                    // この後、他のモデルファイルを探します
                 }
 
-                // StreamingAssetsフォルダが存在しない場合、デフォルトのモデルをロード
-                Log.Info("StreamingAssetsフォルダが見つかりません。デフォルトのモデルを読み込みます。");
-                return LoadDefaultModel();
+                // モデルがまだロードされていない場合、他の VRM/GLB/glTF ファイルを検索
+                if (model == null)
+                {
+                    // StreamingAssets フォルダが存在するか確認
+                    if (Directory.Exists(Application.streamingAssetsPath))
+                    {
+                        // 他の VRM/GLB/glTF ファイルを検索
+                        var modelFiles = Directory
+                            .GetFiles(Application.streamingAssetsPath, "*.*", SearchOption.AllDirectories)
+                            .Where(s => s.EndsWith(".vrm", StringComparison.OrdinalIgnoreCase) ||
+                                        s.EndsWith(".glb", StringComparison.OrdinalIgnoreCase) ||
+                                        s.EndsWith(".gltf", StringComparison.OrdinalIgnoreCase))
+                            .ToArray();
+
+                        if (modelFiles.Length > 0)
+                        {
+                            // 最初のモデルファイルを使用
+                            var otherModelPath = modelFiles[0];
+                            Log.Info($"他のモデルファイルを見つけましたのでロードします: {Path.GetFileName(otherModelPath)}");
+                            model = await LoadAndDisplayModel(otherModelPath, cancellationToken);
+                        } else
+                        {
+                            Log.Warning("他の VRM/GLB/glTF ファイルが見つかりません。デフォルトのモデルを読み込みます。");
+                            // デフォルトのモデルをロード
+                            model = LoadDefaultModel();
+                        }
+                    } else
+                    {
+                        Log.Warning("StreamingAssets フォルダが見つかりません。デフォルトのモデルを読み込みます。");
+                        // デフォルトのモデルをロード
+                        model = LoadDefaultModel();
+                    }
+                }
+
+                if (model != null)
+                {
+                    Log.Info("モデルのロードと表示が完了しました。");
+                } else
+                {
+                    Log.Error("モデルのロードに失敗しました。");
+                }
+
+                return model;
             } catch (Exception e)
             {
-                Log.Error($"VRMの読み込みまたは表示中にエラーが発生しました: {e.Message}");
+                Log.Error($"モデルの読み込みまたは表示中にエラーが発生しました: {e.Message}");
                 return null;
             }
         }
@@ -100,31 +157,9 @@ namespace uDesktopMascot
         }
 
         /// <summary>
-        /// モデルのHipボーンを探す
-        /// </summary>
-        /// <param name="rootTransform"></param>
-        /// <returns></returns>
-        public static Transform FindHipBone(Transform rootTransform)
-        {
-            // VRMの場合、腰のボーンは "Joints/Hips" や "Root" などの名前であることが多い
-            // まずは "Hips" という名前のボーンを探します
-            Transform hipTransform = rootTransform.Find("Hips");
-            if (hipTransform != null)
-            {
-                return hipTransform;
-            }
-
-            // 見つからない場合、全ての子孫を探索します
-            hipTransform = rootTransform.GetComponentsInChildren<Transform>()
-                .FirstOrDefault(t => t.name == "Hips" || t.name == "Root" || t.name == "J_Bip_C_Hips");
-
-            return hipTransform;
-        }
-
-        /// <summary>
         /// VRMファイルを読み込み、モデルを表示する
         /// </summary>
-        /// <param name="path">VRMファイルのパス</param>
+        /// <param name="path">モデルファイルのパス</param>
         /// <param name="cancellationToken"></param>
         private static async UniTask<GameObject> LoadAndDisplayModel(string path, CancellationToken cancellationToken)
         {
@@ -132,18 +167,41 @@ namespace uDesktopMascot
         }
 
         /// <summary>
-        ///     バイト配列からVRMモデルをロードして表示する
+        /// ファイルパスからモデルをロードして表示する
         /// </summary>
         /// <param name="path"></param>
         /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         private static async UniTask<GameObject> LoadAndDisplayModelFromPath(string path,
             CancellationToken cancellationToken)
         {
-            // VRMファイルをロード（VRM 0.x および 1.x に対応）
-            Vrm10Instance instance = await Vrm10.LoadPathAsync(path, canLoadVrm0X: true, ct: cancellationToken);
+            // ファイルの拡張子を取得
+            var extension = Path.GetExtension(path).ToLowerInvariant();
 
-            // モデルのGameObjectを取得
-            GameObject model = instance.gameObject;
+            GameObject model = null;
+
+            if (extension == ".vrm")
+            {
+                // VRMファイルをロード（VRM 0.x および 1.x に対応）
+                Vrm10Instance instance = await Vrm10.LoadPathAsync(path, canLoadVrm0X: true, ct: cancellationToken);
+
+                // モデルのGameObjectを取得
+                model = instance.gameObject;
+            } else if (extension == ".glb" || extension == ".gltf")
+            {
+                // GLBまたはglTFファイルをロード
+                model = await LoadGlbOrGltfModelAsync(path);
+            } else
+            {
+                Log.Error($"サポートされていないファイル形式です: {extension}");
+                return null;
+            }
+
+            if (model == null)
+            {
+                Log.Error("モデルのロードに失敗しました。");
+                return null;
+            }
 
             // シェーダーをlilToonに置き換える
             bool shaderReplaceSuccess = ReplaceShadersWithLilToon(model);
@@ -153,16 +211,58 @@ namespace uDesktopMascot
                 Log.Warning("シェーダーの置き換えに失敗したため、デフォルトのシェーダーを使用します。");
             }
 
-            Log.Info("VRMのロードと表示が完了しました: " + path);
+            Log.Info("モデルのロードと表示が完了しました: " + path);
 
             return model;
         }
 
         /// <summary>
-        ///     モデル内のマテリアルのシェーダーをlilToonに置き換える
+        /// GLBまたはglTFファイルをロードしてモデルを取得
         /// </summary>
-        /// <param name="model">モデルのGameObject</param>
-        /// <returns>成功した場合はtrue、失敗した場合はfalse</returns>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        private static async UniTask<GameObject> LoadGlbOrGltfModelAsync(string path)
+        {
+            try
+            {
+                // ファイルを自動的にパースする
+                var parser = new AutoGltfFileParser(path);
+
+                using var gltfData = parser.Parse();
+                // ImporterContextを作成
+                var importer = new ImporterContext(gltfData);
+
+                // IAwaitCallerを作成
+                var awaitCaller = new RuntimeOnlyAwaitCaller();
+
+                // モデルを非同期でロード
+                var gltfInstance = await importer.LoadAsync(awaitCaller);
+
+                // 必要に応じてメッシュを表示
+                gltfInstance.ShowMeshes();
+
+                // ルートのGameObjectを取得
+                var model = gltfInstance.Root;
+
+                return model;
+            }
+            catch (OperationCanceledException)
+            {
+                Log.Warning("モデルのロードがキャンセルされました。");
+                return null;
+            }
+            catch (Exception e)
+            {
+                Log.Error($"モデルのロード中にエラーが発生しました: {e.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// モデルのシェーダーをlilToonに置き換える
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         private static bool ReplaceShadersWithLilToon(GameObject model)
         {
             try
