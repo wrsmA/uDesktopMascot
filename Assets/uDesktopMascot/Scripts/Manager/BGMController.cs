@@ -9,7 +9,7 @@ namespace uDesktopMascot
     /// <summary>
     ///     BGMを制御するクラス
     /// </summary>
-    public class BGMController : SingletonMonoBehaviour<BGMController>
+    public partial class BGMController : SingletonMonoBehaviour<BGMController>
     {
         /// <summary>
         ///     BGMのリスト
