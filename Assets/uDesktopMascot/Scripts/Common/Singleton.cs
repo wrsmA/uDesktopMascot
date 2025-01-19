@@ -12,32 +12,27 @@ namespace uDesktopMascot
         private static T _instance;
         private static readonly object _lock = new();
         
+#if UNITY_EDITOR
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void DomainReset()
         {
             Log.Debug("[Singleton<" + typeof(T).Name + ">] DomainReset called.");
             _instance = null;
         }
+#endif
 
         public static T Instance
         {
             get
             {
-                Log.Debug("[Singleton<" + typeof(T).Name + ">] Instance getter called.");
-                if (_instance == null)
+                if (_instance != null)
                 {
-                    lock (_lock)
-                    {
-                        if (_instance == null)
-                        {
-                            Log.Debug("[Singleton<" + typeof(T).Name + ">] Creating new instance.");
-                            _instance = new T();
-                        }
-                    }
+                    return _instance;
                 }
-                else
+
+                lock (_lock)
                 {
-                    Log.Debug("[Singleton<" + typeof(T).Name + ">] Returning existing instance.");
+                    _instance ??= new T();
                 }
                 return _instance;
             }
