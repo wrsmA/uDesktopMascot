@@ -6,6 +6,8 @@ on:
     branches:
       - develop
     types: [opened, synchronize, reopened]
+    paths:
+      - 'Assets/uDesktopMascot/Scripts/**/*.cs'
 
 jobs:
   test:
