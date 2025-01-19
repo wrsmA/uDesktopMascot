@@ -122,6 +122,13 @@ jobs:
           unityVersion: ${{ matrix.unityVersion }}
           buildName: 'uDesktopMascot'
 
+      - name: ビルド成果物を圧縮して名前を変更
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY##*/}"
+          cd build
+          mv "${{ matrix.targetPlatform }}" "${REPO_NAME}"
+          cd ..
+
       - name: Upload the Build for ${{ matrix.targetPlatform }}
         uses: actions/upload-artifact@v4.6.0
         with:
