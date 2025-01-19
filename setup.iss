@@ -4,7 +4,7 @@
 #define MyAppName "uDesktopMascot"
 #define MyAppPublisher "MidraLab"
 #define MyAppURL "https://midralab.github.io/uDesktopMascot/"
-#define MyAppExeName "StandaloneWindows64.exe"
+#define MyAppExeName "uDesktopMascot.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
@@ -43,8 +43,8 @@ Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "build\StandaloneWindows64\StandaloneWindows64.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "build\StandaloneWindows64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "build\{#MyAppName}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "build\{#MyAppName}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
