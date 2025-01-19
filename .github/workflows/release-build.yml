@@ -160,10 +160,12 @@ jobs:
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
           unityVersion: ${{ matrix.unityVersion }}
+          buildName: 'uDesktopMascot'
 
       - name: ビルド成果物を圧縮して名前を変更
         run: |
           cd build
+          mv "${{ matrix.targetPlatform }}" "uDesktopMascot"
           zip -r "${{ steps.build_info.outputs.artifact_name }}.zip" *
           cd ..
           mv "build/${{ steps.build_info.outputs.artifact_name }}.zip" "./${{ steps.build_info.outputs.artifact_name }}.zip"
