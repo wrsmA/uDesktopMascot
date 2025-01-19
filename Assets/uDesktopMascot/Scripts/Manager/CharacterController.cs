@@ -222,25 +222,69 @@ namespace uDesktopMascot
 
             // アニメータの取得と設定
             _modelAnimator = _model.GetComponentInChildren<Animator>();
-            LoadVRM.UpdateAnimationController(_modelAnimator);
+
+            if (_modelAnimator != null)
+            {
+                LoadVRM.UpdateAnimationController(_modelAnimator);
+            }
+            else
+            {
+                Log.Warning("モデル内にAnimatorコンポーネントが見つかりませんでした。Animatorを追加します。");
+
+                // Animatorコンポーネントを追加
+                _modelAnimator = _model.AddComponent<Animator>();
+
+                // モデルからAvatarを取得して設定
+                var avatar = CreateAvatarFromModel(model);
+                if (avatar != null)
+                {
+                    _modelAnimator.avatar = avatar;
+                    Log.Info("モデルからAvatarを生成し、Animatorに設定しました。");
+                }
+                else
+                {
+                    Log.Warning("モデルからAvatarを生成できませんでした。アニメーションが正しく再生されない可能性があります。");
+                }
+
+                // アニメーションコントローラーを設定
+                LoadVRM.UpdateAnimationController(_modelAnimator);
+            }
 
             _isInitialized = true;
         }
         
         /// <summary>
-        ///    モデルのバウンディングボックスを計算
+        /// モデルからAvatarを生成します。
         /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        private Bounds CalculateModelBounds(GameObject model)
+        /// <param name="model">モデルのGameObject</param>
+        /// <returns>生成されたAvatar</returns>
+        private Avatar CreateAvatarFromModel(GameObject model)
         {
-            Renderer[] renderers = model.GetComponentsInChildren<Renderer>();
-            Bounds bounds = new Bounds(model.transform.position, Vector3.zero);
-            foreach (Renderer renderer in renderers)
+            // モデル内のHumanDescriptionを取得する
+            var animator = model.GetComponent<Animator>();
+            if (animator != null && animator.avatar != null)
             {
-                bounds.Encapsulate(renderer.bounds);
+                // 既存のAvatarがある場合はそれを返す
+                return animator.avatar;
             }
-            return bounds;
+
+            // SkinnedMeshRenderer から HumanDescription を取得
+            var smr = model.GetComponentInChildren<SkinnedMeshRenderer>();
+            if (smr != null && smr.sharedMesh != null)
+            {
+                // Humanoid アバターを自動生成
+                var humanDescription = new HumanDescription();
+                // お使いのモデルに合わせて設定が必要な場合があります
+
+                var avatar = AvatarBuilder.BuildGenericAvatar(model, "");
+                if (avatar != null)
+                {
+                    avatar.name = model.name + "_Avatar";
+                    return avatar;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
