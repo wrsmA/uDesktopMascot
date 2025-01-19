@@ -120,6 +120,7 @@ jobs:
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
           unityVersion: ${{ matrix.unityVersion }}
+          build-name: 'uDesktopMascot'
           buildName: 'uDesktopMascot'
 
       - name: Upload the Build for ${{ matrix.targetPlatform }}
