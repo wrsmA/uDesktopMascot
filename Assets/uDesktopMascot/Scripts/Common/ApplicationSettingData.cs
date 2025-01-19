@@ -7,6 +7,9 @@ namespace uDesktopMascot
     /// </summary>
     public class CharacterSettings
     {
+        /// <summary>
+        /// モデルのパス
+        /// </summary>
         public string ModelPath { get; set; } = "default.vrm";
 
         private float _scale = 3.0f;
