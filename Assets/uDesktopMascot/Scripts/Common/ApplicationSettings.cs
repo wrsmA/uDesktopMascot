@@ -10,22 +10,27 @@ using System.Reflection;
 namespace uDesktopMascot
 {
     /// <summary>
-    ///     アプリケーション設定を管理するクラス
+    /// アプリケーション設定を管理するクラス
     /// </summary>
     public class ApplicationSettings : Singleton<ApplicationSettings>
     {
         /// <summary>
-        ///    設定ファイルのパス
+        /// 設定ファイルのパス
         /// </summary>
         private static string SettingsFilePath;
 
         /// <summary>
-        ///   キャラクター設定
+        /// 共通設定
+        /// </summary>
+        public CommonSettings Common { get; private set; }
+
+        /// <summary>
+        /// キャラクター設定
         /// </summary>
         public CharacterSettings Character { get; private set; }
         
         /// <summary>
-        ///  サウンド設定
+        /// サウンド設定
         /// </summary>
         public SoundSettings Sound { get; private set; }
         
@@ -45,15 +50,16 @@ namespace uDesktopMascot
         public bool IsLoaded { get; private set; } = false;
 
         /// <summary>
-        ///   コンストラクタ
+        /// コンストラクタ
         /// </summary>
         public ApplicationSettings()
         {
             try
             {
-                SettingsFilePath = Path.Combine(Application.streamingAssetsPath, "application_settings.txt");
+                SettingsFilePath = Path.Combine(Application.streamingAssetsPath, "application_settings.ini");
 
                 // デフォルト値で初期化
+                Common = new CommonSettings();
                 Character = new CharacterSettings();
                 Sound = new SoundSettings();
                 Display = new DisplaySettings();
@@ -114,6 +120,9 @@ namespace uDesktopMascot
             {
                 switch (section.Key)
                 {
+                    case "Common":
+                        AssignSettings(Common, section.Value);
+                        break;
                     case "Character":
                         AssignSettings(Character, section.Value);
                         break;

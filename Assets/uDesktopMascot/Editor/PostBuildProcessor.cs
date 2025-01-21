@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Unity.Logging;
 using UnityEditor;
 using UnityEditor.Callbacks;
+using Log = Unity.Logging.Log;
 
 namespace uDesktopMascot.Editor
 {

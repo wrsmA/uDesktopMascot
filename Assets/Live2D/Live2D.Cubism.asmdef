@@ -1,0 +1,16 @@
+{
+    "name": "Live2D.Cubism",
+    "rootNamespace": "",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "ENABLE_LIVE2D"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
