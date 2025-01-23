@@ -5,7 +5,7 @@
 
 Japanese | [English](README_EN.md) | [中文](README_CN.md) | [Español](README_ES.md) | [Français](README_FR.md)
 
-**Note**: The languages above (English, 中文, Español, Français) are generated via automatic translation by GPT-4o-mini. For accuracy and nuances in translation, please refer to the original text (Japanese).
+**Note**: The languages mentioned above (English, 中文, Español, Français) have been generated through automatic translation by GPT-4o-mini. For accuracy and nuances in translation, please refer to the original text (Japanese).
 
 <!-- TOC -->
 * [uDesktopMascot](#udesktopmascot)
@@ -13,7 +13,7 @@ Japanese | [English](README_EN.md) | [中文](README_CN.md) | [Español](README_
   * [Feature List](#feature-list)
   * [Requirements](#requirements)
   * [License](#license)
-  * [Materials](#materials)
+  * [Assets Information](#assets-information)
   * [Creator Credits](#creator-credits)
   * [3rd Party Notices](#3rd-party-notices)
   * [Sponsor](#sponsor)
@@ -21,7 +21,7 @@ Japanese | [English](README_EN.md) | [中文](README_CN.md) | [Español](README_
 
 ## Overview
 
-"uDesktopMascot" is an open-source project that displays characters on your desktop and responds with reactions and sounds based on user interaction. This project is developed using Unity and supports characters in VRM format, allowing you to easily enjoy your favorite character on your desktop.
+“uDesktopMascot” is an open-source project that displays a character on the desktop and plays reactions or sounds based on user interactions. This project is developed using Unity, and it supports characters in VRM format, allowing you to easily enjoy your favorite characters on your desktop.
 
 **Supported Platforms**
 * Windows 10/11
@@ -29,14 +29,14 @@ Japanese | [English](README_EN.md) | [中文](README_CN.md) | [Español](README_
 
 ## Feature List
 
-The application includes the following features. Please refer to the list for details.
+The application has the following implemented features. Please refer to the list below for details.
 
 You can add external assets by placing them in the StreamingAssets folder.
 
 <details>
 
-<summary>Model & Animation</summary>
-* Displays model files placed in StreamingAssets.
+<summary>Models and Animations</summary>
+* It loads and displays arbitrary model files placed in StreamingAssets.
   * Supports VRM (1.x, 0.x) format models.
   * Supports GLB/GLTF format models.
 
@@ -44,20 +44,20 @@ You can add external assets by placing them in the StreamingAssets folder.
 
 <details>
 
-<summary>Voice & BGM</summary>
-* Loads and plays audio files placed under SteamingAssets/Voice/. If there are multiple files, it plays them randomly.
-  * The audio played on click is loaded from sound files placed in StreamingAssets/Voice/Click/.
-* Loads and plays music files placed under StreamingAssets/BGM/. If there are multiple files, it plays them randomly.
+<summary>Voice and BGM</summary>
+* It loads and plays audio files placed in SteamingAssets/Voice/. If there are multiple files, it plays them randomly.
+  * The audio played on click is loaded from audio files placed in StreamingAssets/Voice/Click/.
+* It loads and plays music files placed in SteamingAssets/BGM/. If there are multiple files, it plays them randomly.
 * Default voice for the character:
-  * The default voice uses sound from [COEIROINK: Tsukuyomi-chan](https://coeiroink.com/character/audio-character/tsukuyomi-chan).
-  * It plays at app launch, app exit, and on clicks.
+  * The default voice uses audio from [COEIROINK: Tsukuyomi-chan](https://coeiroink.com/character/audio-character/tsukuyomi-chan).
+  * It is played on application start, exit, and click events.
 
 </details>
 
 <details>
 
-<summary>Application Settings via Text Files</summary>
-You can change the application settings using the application_settings.txt file.
+<summary>Application Settings via Text File</summary>
+You can change the application settings through the application_settings.txt file.
 
 The structure of the settings file is as follows:
 
@@ -85,6 +85,7 @@ AlwaysOnTop=True
 [Performance]
 TargetFrameRate=60
 QualityLevel=2
+
 ```
 
 </details>
@@ -98,11 +99,11 @@ QualityLevel=2
   * BGM
   * Models
 
-## Materials
-* The default character animations are created using animations from the [“VRM Doll Play” animation data set](https://fumi2kick.booth.pm/items/1655686). It has been confirmed that it can be distributed as part of this repository.
-* The font used is [Noto Sans Japanese](https://fonts.google.com/noto/specimen/Noto+Sans+JP?lang=ja_Jpan). Redistribution of the Noto Sans JP font is under the [SIL OPEN FONT LICENSE Version 1.1](https://fonts.google.com/noto/specimen/Noto+Sans+JP/license?lang=ja_Jpan). The copyright of the font belongs to the original author (Google).
-* The default voice uses sound from [COEIROINK: Tsukuyomi-chan](https://coeiroink.com/character/audio-character/tsukuyomi-chan). Prior confirmation regarding its usage has been obtained from COEIROINK.
-* The button icons are sourced from [MingCute](https://github.com/MidraLab/MingCute).
+## Assets Information
+* The default character animations are created using the [“VRM Doll Play” animation data collection](https://fumi2kick.booth.pm/items/1655686). It has been confirmed that redistribution is permitted.
+* The font is [Noto Sans Japanese](https://fonts.google.com/noto/specimen/Noto+Sans+JP?lang=ja_Jpan). The Noto Sans JP font is redistributed under the [SIL OPEN FONT LICENSE Version 1.1](https://fonts.google.com/noto/specimen/Noto+Sans+JP/license?lang=ja_Jpan). The copyright of the font remains with the original author (Google).
+* The default voice uses audio from [COEIROINK: Tsukuyomi-chan](https://coeiroink.com/character/audio-character/tsukuyomi-chan). It has been confirmed beforehand with COEIROINK regarding its use.
+* The button icons use [MingCute](https://github.com/MidraLab/MingCute).
 
 ## Creator Credits
 * Model: "Aozora"
