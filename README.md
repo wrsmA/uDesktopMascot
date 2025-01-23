@@ -100,7 +100,7 @@ QualityLevel=2
   * モデル
 
 ## 素材について
-* デフォルトのキャラクターアニメーションは、[『VRMお人形遊び』用アニメーションデータ詰め合わせ](https://fumi2kick.booth.pm/items/1655686)を用いて作成されています。
+* デフォルトのキャラクターアニメーションは、[『VRMお人形遊び』用アニメーションデータ詰め合わせ](https://fumi2kick.booth.pm/items/1655686)を用いて作成されています。リポジトリに含めて配布することに関して、確認済みです。
 * フォントは[Noto Sans Japanese](https://fonts.google.com/noto/specimen/Noto+Sans+JP?lang=ja_Jpan)です。[SIL OPEN FONT LICENSE Version 1.1](https://fonts.google.com/noto/specimen/Noto+Sans+JP/license?lang=ja_Jpan)に基づきNoto Sans JPフォントを再配布するものです。フォントの著作権は元の作者（Google）にあります。
 * デフォルトボイスは、[COEIROINK:つくよみちゃん](https://coeiroink.com/character/audio-character/tsukuyomi-chan)の音声を使用しています。使用方法については、COEIROINK側に事前に確認済みです
 * ボタンアイコンは、[MingCute](https://github.com/MidraLab/MingCute)を使用しています。

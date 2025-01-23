@@ -1671,6 +1671,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f404c24d6ee45479cc4df2fd470e498, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _defaultAnimationClip:
+  - {fileID: 7400000, guid: 10775a38f42d3664ea30f3373dbbd868, type: 2}
+  - {fileID: 7400000, guid: c86f680d31fa33d46a36cb540b00c71f, type: 2}
+  - {fileID: 7400000, guid: 43db3594bebf8b448a93a018516a69c7, type: 2}
+  - {fileID: 7400000, guid: ba7a440ac64ae934ab0545cb3159fa70, type: 2}
+  - {fileID: 7400000, guid: fea45078e33736b4c9d593eb96a9c02d, type: 2}
+  - {fileID: 7400000, guid: d26c88ebd4caf79498c960cefc23c6ac, type: 2}
+  - {fileID: 7400000, guid: cddbdf7f82c1aaa4eb0e68aa1460e765, type: 2}
+  - {fileID: 7400000, guid: 72975c431b762894e97f8ad5f0122769, type: 2}
 --- !u!1 &1567647184
 GameObject:
   m_ObjectHideFlags: 0
