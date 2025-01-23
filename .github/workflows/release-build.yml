@@ -141,8 +141,10 @@ jobs:
           else
             PLATFORM="unknown"
           fi
-          ARTIFACT_NAME="${REPO_NAME}_v${VERSION}_${PLATFORM}"
+          ARTIFACT_NAME="${REPO_NAME}_${PLATFORM}_v${VERSION}"
           echo "artifact_name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "os_name=${OS_NAME}" >> $GITHUB_OUTPUT
 
       - uses: actions/cache@v4.2.0
         with:
