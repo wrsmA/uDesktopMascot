@@ -45,7 +45,7 @@ namespace uDesktopMascot
                 {
                     case ModelType.FBX:
                         // FBXモデルの読み込み
-                        model = await LoadFBX.LoadModelAsync(characterSettings.ModelPath,characterSettings.TexturePaths, cancellationToken);
+                        model = await LoadFBX.LoadModelAsync(characterSettings.ModelPath, cancellationToken);
                         break;
                     case ModelType.VRM:
                     case ModelType.GLB:

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Threading;
 using Assimp;
@@ -23,23 +24,25 @@ namespace uDesktopMascot
         /// 指定されたパスのFBXモデルを非同期的に読み込み、GameObjectを返します。
         /// </summary>
         /// <param name="modelPath">モデルファイルのパス（StreamingAssetsからの相対パス）</param>
-        /// <param name="texturePaths">テクスチャファイルのパスのリスト</param>
         /// <param name="cancellationToken"></param>
         /// <returns>読み込まれたモデルのGameObjectを返すUniTask</returns>
         public static async UniTask<GameObject> LoadModelAsync(
             string modelPath,
-            List<string> texturePaths,
             CancellationToken cancellationToken)
         {
             // モデルファイルのフルパスを作成
-            string fullModelPath = ResolvePath(modelPath);
+            string fullPath = Path.Combine(Application.streamingAssetsPath, modelPath);
 
             // モデルファイルが存在するか確認
-            if (!File.Exists(fullModelPath))
+            if (!File.Exists(fullPath))
             {
-                Log.Error("[LoadFBX] モデルファイルが見つかりません: {0}", fullModelPath);
+                Log.Error("[LoadFBX] モデルファイルが見つかりません: {0}", fullPath);
                 return null;
             }
+
+
+            // FBXファイルのディレクトリを取得
+            string fbxDirectory = Path.GetDirectoryName(fullPath);
 
             // 重い処理をバックグラウンドスレッドで実行
             ModelData modelData = await UniTask.RunOnThreadPool(async () =>
@@ -51,11 +54,9 @@ namespace uDesktopMascot
                 Scene scene;
                 try
                 {
-                    scene = importer.ImportFile(
-                        fullModelPath,
-                        PostProcessPreset.TargetRealTimeMaximumQuality);
+                    scene = importer.ImportFile(fullPath, PostProcessPreset.TargetRealTimeMaximumQuality);
                 }
-                catch (System.Exception ex)
+                catch (Exception ex)
                 {
                     Log.Error("[LoadFBX] モデルのインポート中にエラーが発生しました: {0}", ex.Message);
                     return null;
@@ -77,46 +78,10 @@ namespace uDesktopMascot
                     Materials = new List<MaterialData>()
                 };
 
-                // テクスチャパスが一つのみの場合、その一つを全てのマテリアルに適用する
-                bool isSingleTexture = texturePaths != null && texturePaths.Count == 1;
-
                 // マテリアルを処理
-                int textureIndex = 0;
-                int textureCount = texturePaths != null ? texturePaths.Count : 0;
-
                 foreach (var assimpMaterial in scene.Materials)
                 {
-                    string texturePath = null;
-
-                    if (texturePaths != null && textureCount > 0)
-                    {
-                        if (isSingleTexture)
-                        {
-                            // テクスチャパスが一つだけの場合、全てのマテリアルにそのテクスチャを適用
-                            texturePath = texturePaths[0];
-                        }
-                        else
-                        {
-                            if (textureIndex < textureCount)
-                            {
-                                texturePath = texturePaths[textureIndex];
-                            }
-                            else
-                            {
-                                // テクスチャの数がマテリアルの数より少ない場合、最後のテクスチャを使用
-                                texturePath = texturePaths[textureCount - 1];
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Log.Warning("[LoadFBX] テクスチャパスが指定されていません。"
-                            + "マテリアル '{0}' にテクスチャが割り当てられません。", assimpMaterial.Name);
-                    }
-
-                    textureIndex++;
-
-                    var materialData = await ProcessMaterialAsync(assimpMaterial, texturePath);
+                    var materialData = await ProcessMaterialAsync(assimpMaterial, fbxDirectory);
                     data.Materials.Add(materialData);
                 }
 
@@ -288,7 +253,7 @@ namespace uDesktopMascot
         /// AssimpのマテリアルをMaterialDataに非同期で変換する
         /// </summary>
         private static async UniTask<MaterialData> ProcessMaterialAsync(
-            AssimpMaterial assimpMaterial, string texturePath)
+            AssimpMaterial assimpMaterial, string fbxDirectory)
         {
             MaterialData materialData = new MaterialData();
 
@@ -307,27 +272,78 @@ namespace uDesktopMascot
             }
 
             // テクスチャ
-            if (!string.IsNullOrEmpty(texturePath))
+            if (assimpMaterial.HasTextureDiffuse)
             {
-                string fullTexturePath = ResolvePath(texturePath);
+                string texturePath = assimpMaterial.TextureDiffuse.FilePath;
+                Log.Info("[LoadFBX] 取得したテクスチャパス: {0}", texturePath);
 
-                if (File.Exists(fullTexturePath))
+                // パスの区切り文字を統一
+                texturePath = texturePath.Replace('\\', Path.DirectorySeparatorChar)
+                    .Replace('/', Path.DirectorySeparatorChar)
+                    .Trim();
+
+                // テクスチャファイル名を取得
+                string textureFileName = Path.GetFileName(texturePath);
+                Log.Info("[LoadFBX] テクスチャファイル名: {0}", textureFileName);
+
+                // テクスチャファイルを検索
+                byte[] textureData = await FindAndLoadTextureAsync(textureFileName, fbxDirectory);
+
+                if (textureData != null)
                 {
-                    byte[] data = await ReadAllBytesAsync(fullTexturePath);
-                    materialData.TextureData = data;
+                    materialData.TextureData = textureData;
                 }
                 else
                 {
-                    Log.Warning("[LoadFBX] テクスチャファイルが見つかりません: {0}", fullTexturePath);
+                    Log.Warning("[LoadFBX] テクスチャ '{0}' を見つけることができませんでした。", textureFileName);
                 }
             }
             else
             {
-                Log.Warning("[LoadFBX] テクスチャパスが指定されていません。"
-                    + "マテリアル '{0}' にテクスチャが割り当てられません。", assimpMaterial.Name);
+                Log.Warning("[LoadFBX] マテリアル '{0}' にディフューズテクスチャが設定されていません。", assimpMaterial.Name);
             }
 
             return materialData;
+        }
+        
+        /// <summary>
+        /// テクスチャファイルを検索して読み込む
+        /// </summary>
+        /// <param name="textureFileName"></param>
+        /// <param name="fbxDirectory"></param>
+        /// <returns></returns>
+        private static async UniTask<byte[]> FindAndLoadTextureAsync(string textureFileName, string fbxDirectory)
+        {
+            // 検索するディレクトリのリスト
+            List<string> searchDirectories = new List<string>
+            {
+                fbxDirectory, // FBXファイルのディレクトリ
+                Path.Combine(fbxDirectory, "Textures"), // FBXファイルのディレクトリ内の "Textures" フォルダ
+                Application.streamingAssetsPath // StreamingAssets フォルダ
+            };
+
+            // 検索する拡張子のリスト
+            string[] extensions = new[] { ".png", ".jpg", ".jpeg", ".tga", ".bmp" };
+
+            foreach (string directory in searchDirectories)
+            {
+                foreach (string extension in extensions)
+                {
+                    string potentialFileName = Path.ChangeExtension(textureFileName, extension);
+                    string potentialPath = Path.Combine(directory, potentialFileName);
+                    Log.Info("[LoadFBX] テクスチャの検索パス: {0}", potentialPath);
+
+                    if (File.Exists(potentialPath))
+                    {
+                        Log.Info("[LoadFBX] テクスチャファイルを発見: {0}", potentialPath);
+                        byte[] data = await ReadAllBytesAsync(potentialPath);
+                        return data;
+                    }
+                }
+            }
+
+            // テクスチャが見つからなかった場合
+            return null;
         }
 
         /// <summary>

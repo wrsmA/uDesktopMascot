@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace uDesktopMascot
 {
@@ -12,11 +11,6 @@ namespace uDesktopMascot
         /// モデルのパス
         /// </summary>
         public string ModelPath { get; set; } = "default.vrm";
-
-        /// <summary>
-        /// テクスチャのパスリスト
-        /// </summary>
-        public List<string> TexturePaths { get; set; } = new List<string>();
 
         /// <summary>
         /// モデルのスケール（0.1 ～ 10.0）
