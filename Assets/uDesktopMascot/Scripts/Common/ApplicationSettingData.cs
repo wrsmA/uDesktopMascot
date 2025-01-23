@@ -1,9 +1,27 @@
-﻿using UnityEngine;
+﻿using System;
+
+using UnityEngine;
 
 namespace uDesktopMascot
 {
     /// <summary>
-    ///    キャラクターモデルの設定
+    /// アプリケーションの汎用設定データ
+    /// </summary>
+    public class CommonSettings
+    {
+        private string _lastCharacterType;
+
+        public CharacterType LastCharacterType
+        {
+            get => Enum.Parse<CharacterType>(_lastCharacterType);
+            set => _lastCharacterType = value.ToString();
+        }
+
+        public string LastCharacterPath { get; set; } = "";
+    }
+
+    /// <summary>
+    /// キャラクターモデルの設定
     /// </summary>
     public class CharacterSettings
     {
@@ -105,11 +123,11 @@ namespace uDesktopMascot
     }
 
     /// <summary>
-    ///   サウンドの設定
+    /// サウンドの設定
     /// </summary>
     public class SoundSettings
     {
-        private float _voiceVolume = 1.0f;
+        private float _voiceVolume = 0.1f;
         /// <summary>
         /// ボイスの音量（0.0～1.0）
         /// </summary>
@@ -119,7 +137,7 @@ namespace uDesktopMascot
             set => _voiceVolume = Mathf.Clamp01(value);
         }
 
-        private float _bgmVolume = 0.5f;
+        private float _bgmVolume = 0.1f;
         /// <summary>
         /// BGMの音量（0.0～1.0）
         /// </summary>
@@ -129,7 +147,7 @@ namespace uDesktopMascot
             set => _bgmVolume = Mathf.Clamp01(value);
         }
 
-        private float _seVolume = 1.0f;
+        private float _seVolume = 0.1f;
         /// <summary>
         /// 効果音の音量（0.0～1.0）
         /// </summary>
@@ -140,7 +158,7 @@ namespace uDesktopMascot
         }
     }
     /// <summary>
-    ///   表示設定
+    /// 表示設定
     /// </summary>
     public class DisplaySettings
     {

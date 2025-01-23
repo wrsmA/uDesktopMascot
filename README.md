@@ -8,14 +8,18 @@
 **注意**: 上記の言語（English、中文、Español、Français）は、GPT-4o-miniによる自動翻訳で生成されています。翻訳の精度やニュアンスに関しては、原文（日本語）をご参照ください。
 
 <!-- TOC -->
-* [uDesktopMascot](#udesktopmascot)
-  * [概要](#概要)
-  * [機能一覧](#機能一覧)
-  * [requirements](#requirements)
-  * [license](#license)
-  * [素材について](#素材について)
-  * [制作者クレジット](#制作者クレジット)
-  * [3rd Party Notices](#3rd-party-notices)
+- [uDesktopMascot](#udesktopmascot)
+  - [概要](#概要)
+  - [機能一覧](#機能一覧)
+  - [requirements](#requirements)
+  - [Live2D対応について](#live2d対応について)
+    - [用意するもの](#用意するもの)
+    - [手順](#手順)
+  - [license](#license)
+  - [素材について](#素材について)
+  - [制作者クレジット](#制作者クレジット)
+  - [3rd Party Notices](#3rd-party-notices)
+  - [sponsor](#sponsor)
 <!-- TOC -->
 
 ## 概要
@@ -43,6 +47,17 @@
 
 ## requirements
 * Unity 6000.0.31f1(IL2CPP)
+
+## Live2D対応について
+
+### 用意するもの
+
+Live2D-CubismSDK （実装時点ではCubismSdkForUnity-5-r.3.unitypackageを使用）
+
+### 手順
+
+1. sdkをインポート（`Assets/Live2D/`まではフォルダを作成済み＆asmdefを配置）
+2. ScriptDefineSymbolsに`ENABLE_LIVE2D`を追加
 
 ## license
 * コードは[Apache License 2.0](LICENSE)に基づいてライセンスされています。

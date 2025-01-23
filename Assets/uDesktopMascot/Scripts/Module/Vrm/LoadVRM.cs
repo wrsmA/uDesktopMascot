@@ -9,7 +9,7 @@ using UniGLTF;
 using UniVRM10;
 using Object = UnityEngine.Object;
 
-namespace uDesktopMascot
+namespace uDesktopMascot.VRM
 {
     /// <summary>
     /// VRMファイルを読み込む
@@ -19,7 +19,7 @@ namespace uDesktopMascot
         /// <summary>
         /// デフォルトのVRMファイル名
         /// </summary>
-        private const string DefaultVrmFileName = "DefaultModel/DefaultModel";
+        private const string DefaultVrmFileName = "DefaultModel/Vrm/DefaultModel";
 
         /// <summary>
         /// アニメーションコントローラーを設定
@@ -52,14 +52,14 @@ namespace uDesktopMascot
         /// <summary>
         /// モデルをロードする
         /// </summary>
-        public static async UniTask<GameObject> LoadModel(CancellationToken cancellationToken)
+        public static async UniTask<GameObject> LoadModel(CancellationToken cancellationToken, string path)
         {
             try
             {
                 GameObject model = null;
 
                 // 設定ファイルからモデルパスを取得
-                var modelPath = ApplicationSettings.Instance.Character.ModelPath;
+                var modelPath = path;
 
                 if (!string.IsNullOrEmpty(modelPath))
                 {

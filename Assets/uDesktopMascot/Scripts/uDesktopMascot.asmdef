@@ -1,0 +1,26 @@
+{
+    "name": "uDesktopMascot",
+    "rootNamespace": "",
+    "references": [
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:fd228c28e14f1a34cbe508676c914dd7",
+        "GUID:776d03a35f1b52c4a9aed9f56d7b4229",
+        "GUID:785f71526b4175240bb8e068347cab84",
+        "GUID:e47c917724578cc43b5506c17a27e9a0",
+        "GUID:2665a8d13d1b3f18800f46e256720795",
+        "GUID:e0cd26848372d4e5c891c569017e11f1",
+        "GUID:8d76e605759c3f64a957d63ef96ada7c",
+        "GUID:b2b60b59554a33b41b16ef821fecbac2",
+        "GUID:2cc19148e7b7e284d833267f26617c9f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
