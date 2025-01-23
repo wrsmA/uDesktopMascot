@@ -20,7 +20,7 @@ namespace uDesktopMascot
         /// </summary>
         public virtual void Disappear()
         {
-            gameObject.SetActive(false);
+            Destroy(gameObject);
         }
     }
 }
