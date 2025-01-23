@@ -155,7 +155,7 @@ sysinfo.txt
 
 # End of https://www.toptal.com/developers/gitignore/api/unity,rider
 
-uDesktopMascot.zip
+uDesktopMascot*.zip
 uDesktopMascotBuild/*
 .vscode/*
 Assets/Live2D/
