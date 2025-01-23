@@ -23,10 +23,13 @@ namespace uDesktopMascot
         /// 指定されたパスのFBXモデルを非同期的に読み込み、GameObjectを返します。
         /// </summary>
         /// <param name="modelPath">モデルファイルのパス（StreamingAssetsからの相対パス）</param>
-        /// <param name="texturePaths"></param>
+        /// <param name="texturePaths">テクスチャファイルのパスのリスト</param>
         /// <param name="cancellationToken"></param>
         /// <returns>読み込まれたモデルのGameObjectを返すUniTask</returns>
-        public static async UniTask<GameObject> LoadModelAsync(string modelPath, List<string> texturePaths, CancellationToken cancellationToken)
+        public static async UniTask<GameObject> LoadModelAsync(
+            string modelPath,
+            List<string> texturePaths,
+            CancellationToken cancellationToken)
         {
             // モデルファイルのフルパスを作成
             string fullModelPath = ResolvePath(modelPath);
@@ -48,7 +51,9 @@ namespace uDesktopMascot
                 Scene scene;
                 try
                 {
-                    scene = importer.ImportFile(fullModelPath, PostProcessPreset.TargetRealTimeMaximumQuality);
+                    scene = importer.ImportFile(
+                        fullModelPath,
+                        PostProcessPreset.TargetRealTimeMaximumQuality);
                 }
                 catch (System.Exception ex)
                 {
@@ -72,20 +77,44 @@ namespace uDesktopMascot
                     Materials = new List<MaterialData>()
                 };
 
+                // テクスチャパスが一つのみの場合、その一つを全てのマテリアルに適用する
+                bool isSingleTexture = texturePaths != null && texturePaths.Count == 1;
+
                 // マテリアルを処理
                 int textureIndex = 0;
+                int textureCount = texturePaths != null ? texturePaths.Count : 0;
+
                 foreach (var assimpMaterial in scene.Materials)
                 {
                     string texturePath = null;
-                    if (texturePaths != null && textureIndex < texturePaths.Count)
+
+                    if (texturePaths != null && textureCount > 0)
                     {
-                        texturePath = texturePaths[textureIndex];
-                        textureIndex++;
+                        if (isSingleTexture)
+                        {
+                            // テクスチャパスが一つだけの場合、全てのマテリアルにそのテクスチャを適用
+                            texturePath = texturePaths[0];
+                        }
+                        else
+                        {
+                            if (textureIndex < textureCount)
+                            {
+                                texturePath = texturePaths[textureIndex];
+                            }
+                            else
+                            {
+                                // テクスチャの数がマテリアルの数より少ない場合、最後のテクスチャを使用
+                                texturePath = texturePaths[textureCount - 1];
+                            }
+                        }
                     }
                     else
                     {
-                        Log.Warning("[LoadFBX] テクスチャパスが不足しています。マテリアル '{0}' にテクスチャが割り当てられません。", assimpMaterial.Name);
+                        Log.Warning("[LoadFBX] テクスチャパスが指定されていません。"
+                            + "マテリアル '{0}' にテクスチャが割り当てられません。", assimpMaterial.Name);
                     }
+
+                    textureIndex++;
 
                     var materialData = await ProcessMaterialAsync(assimpMaterial, texturePath);
                     data.Materials.Add(materialData);
@@ -133,7 +162,9 @@ namespace uDesktopMascot
                 Shader mtoonShader = Shader.Find("VRM10/MToon10");
                 if (mtoonShader == null)
                 {
-                    Log.Error("[LoadFBX] MToon10 シェーダーが見つかりません。UniVRM パッケージが正しくインポートされているか確認してください。");
+                    Log.Error("[LoadFBX] MToon10 シェーダーが見つかりません。"
+                        + "UniVRM パッケージが正しくインポートされているか確認してください。");
+
                     // フォールバックとして Standard シェーダーを使用
                     mtoonShader = Shader.Find("Standard");
                 }
@@ -173,7 +204,8 @@ namespace uDesktopMascot
             foreach (int meshIndex in node.MeshIndices)
             {
                 AssimpMesh mesh = scene.Meshes[meshIndex];
-                MeshData meshData = ConvertAssimpMesh(mesh, modelData.Materials[mesh.MaterialIndex]);
+                MeshData meshData = ConvertAssimpMesh(mesh, 
+                    modelData.Materials[mesh.MaterialIndex]);
                 modelData.Meshes.Add(meshData);
             }
 
@@ -255,7 +287,8 @@ namespace uDesktopMascot
         /// <summary>
         /// AssimpのマテリアルをMaterialDataに非同期で変換する
         /// </summary>
-        private static async UniTask<MaterialData> ProcessMaterialAsync(AssimpMaterial assimpMaterial, string texturePath)
+        private static async UniTask<MaterialData> ProcessMaterialAsync(
+            AssimpMaterial assimpMaterial, string texturePath)
         {
             MaterialData materialData = new MaterialData();
 
@@ -290,12 +323,13 @@ namespace uDesktopMascot
             }
             else
             {
-                Log.Warning("[LoadFBX] テクスチャパスが指定されていません。マテリアル '{0}' にテクスチャが割り当てられません。", assimpMaterial.Name);
+                Log.Warning("[LoadFBX] テクスチャパスが指定されていません。"
+                    + "マテリアル '{0}' にテクスチャが割り当てられません。", assimpMaterial.Name);
             }
 
             return materialData;
         }
-        
+
         /// <summary>
         /// パスを解決してフルパスを返す
         /// </summary>
@@ -308,10 +342,7 @@ namespace uDesktopMascot
                 return null;
             }
 
-            var fullPath =
-                // 絶対パスの場合、そのまま使用
-                Path.IsPathRooted(path) ? path :
-                // 相対パスの場合、StreamingAssets フォルダを基準とする
+            var fullPath = Path.IsPathRooted(path) ? path :
                 Path.Combine(Application.streamingAssetsPath, path);
 
             return fullPath;
@@ -329,32 +360,36 @@ namespace uDesktopMascot
             }
 
             // Unity 2017 以前の場合
-            await using FileStream sourceStream = new FileStream(
-                path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true);
-            long fileLength = sourceStream.Length;
-            byte[] result = new byte[fileLength];
-
-            int totalBytesRead = 0;
-
-            while (totalBytesRead < fileLength)
+            using (FileStream sourceStream = new FileStream(
+                path, FileMode.Open, FileAccess.Read, FileShare.Read,
+                bufferSize: 4096, useAsync: true))
             {
-                var bytesRead = await sourceStream.ReadAsync(result, totalBytesRead,
-                    (int)(fileLength - totalBytesRead));
-                if (bytesRead == 0)
+                long fileLength = sourceStream.Length;
+                byte[] result = new byte[fileLength];
+
+                int totalBytesRead = 0;
+
+                while (totalBytesRead < fileLength)
                 {
-                    break; // ストリームの終端に達した場合
+                    var bytesRead = await sourceStream.ReadAsync(
+                        result, totalBytesRead, 
+                        (int)(fileLength - totalBytesRead));
+                    if (bytesRead == 0)
+                    {
+                        break; // ストリームの終端に達した場合
+                    }
+
+                    totalBytesRead += bytesRead;
                 }
 
-                totalBytesRead += bytesRead;
-            }
+                if (totalBytesRead != fileLength)
+                {
+                    Log.Warning("[LoadFBX] 予期しないEOFによりファイルの読み込みが完了しませんでした: {0}", path);
+                    // 必要に応じて、部分的に読み込んだデータを処理するか、エラーを返す
+                }
 
-            if (totalBytesRead != fileLength)
-            {
-                Log.Warning("[LoadFBX] 予期しないEOFによりファイルの読み込みが完了しませんでした: {path}", path);
-                // 必要に応じて、部分的に読み込んだデータを処理するか、エラーを返す
+                return result;
             }
-
-            return result;
         }
 
         /// <summary>
