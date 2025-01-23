@@ -162,7 +162,21 @@ jobs:
           unityVersion: ${{ matrix.unityVersion }}
           buildName: 'uDesktopMascot'
 
-      - name: ビルド成果物を圧縮して名前を変更
+      # Windowsランナー用のステップ
+      - name: ビルド成果物を圧縮して名前を変更 (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cd build
+          Rename-Item "${{ matrix.targetPlatform }}" "uDesktopMascot"
+          Compress-Archive -Path "uDesktopMascot\*" -DestinationPath "${{ steps.build_info.outputs.artifact_name }}.zip"
+          cd ..
+          Move-Item "build\${{ steps.build_info.outputs.artifact_name }}.zip" "${{ steps.build_info.outputs.artifact_name }}.zip"
+
+      # macOS/Linuxランナー用のステップ
+      - name: ビルド成果物を圧縮して名前を変更 (macOS/Linux)
+        if: runner.os != 'Windows'
+        shell: bash
         run: |
           cd build
           mv "${{ matrix.targetPlatform }}" "uDesktopMascot"
