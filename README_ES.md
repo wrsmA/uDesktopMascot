@@ -5,7 +5,7 @@
 
 日本語 | [English](README_EN.md) | [中文](README_CN.md) | [Español](README_ES.md) | [Français](README_FR.md)
 
-**Nota**: Los idiomas mencionados anteriormente (English, 中文, Español, Français) han sido generados mediante traducción automática de GPT-4o-mini. Para la precisión y matices de la traducción, se recomienda consultar el texto original (日本語).
+**Nota**: Los idiomas mencionados anteriormente (English, 中文, Español, Français) han sido generados mediante traducción automática por GPT-4o-mini. Para precisión y matices de traducción, por favor consulte el texto original (日本語).
 
 <!-- TOC -->
 * [uDesktopMascot](#udesktopmascot)
@@ -14,14 +14,14 @@
   * [requisitos](#requisitos)
   * [licencia](#licencia)
   * [Sobre los materiales](#sobre-los-materiales)
-  * [Créditos del creador](#créditos-del-creador)
+  * [Créditos de los creadores](#créditos-de-los-creadores)
   * [Avisos de terceros](#avisos-de-terceros)
   * [patrocinador](#patrocinador)
 <!-- TOC -->
 
 ## Resumen
 
-"uDesktopMascot" es un proyecto de código abierto que muestra personajes en el escritorio y reproduce reacciones y voces en función de la interacción del usuario. Este proyecto ha sido desarrollado utilizando Unity y soporta personajes en formato VRM, permitiéndote disfrutar fácilmente de tus personajes favoritos en el escritorio.
+“uDesktopMascot” es un proyecto de código abierto que muestra personajes en el escritorio y reproduce reacciones y sonidos en función de la interacción del usuario. Este proyecto ha sido desarrollado utilizando Unity y admite personajes en formato VRM, lo que permite disfrutar de sus personajes favoritos en el escritorio de manera sencilla.
 
 **Plataformas compatibles**
 * Windows 10/11
@@ -29,14 +29,14 @@
 
 ## Lista de características
 
-La aplicación incluye las siguientes funciones. Consulta la lista a continuación para más detalles.
+La aplicación ha implementado las siguientes funciones. Consulte la lista a continuación para más detalles.
 
-La adición de activos externos se puede lograr colocando archivos en la carpeta StreamingAssets.
+La adición de activos externos se puede lograr colocando los archivos en la carpeta StreamingAssets.
 
 <details>
 
-<summary>Modelos y animaciones</summary>
-* Carga y muestra archivos de modelos colocados en StreamingAssets.
+<summary>Modelo y animación</summary>
+* Carga y visualiza archivos de modelo en la carpeta StreamingAssets.
   * Admite modelos en formato VRM (1.x, 0.x).
   * Admite modelos en formato GLB/GLTF.
 
@@ -44,26 +44,27 @@ La adición de activos externos se puede lograr colocando archivos en la carpeta
 
 <details>
 
-<summary>Voz y BGM</summary>
-* Carga y reproduce archivos de audio colocados en StreamingAssets/Voice/. Si hay varios, se reproducirán de manera aleatoria.
-  * La voz que se reproduce al hacer clic se carga desde archivos de audio ubicados en StreamingAssets/Voice/Click/. 
-* Carga y reproduce archivos de música colocados en StreamingAssets/BGM/. Si hay varios, se reproducirán de manera aleatoria.
+<summary>Voces y BGM</summary>
+* Carga y reproduce archivos de audio en la carpeta SteamingAssets/Voice/. Si hay varios, se reproducen aleatoriamente.
+  * Los sonidos reproducidos al hacer clic se cargan desde la carpeta StreamingAssets/Voice/Click/. 
+* Carga y reproduce archivos de música en la carpeta StreamingAssets/BGM/. Si hay varios, se reproducen aleatoriamente.
 * Adición de la voz predeterminada del personaje
-  * La voz predeterminada utiliza el audio de [COEIROINK: つくよみちゃん](https://coeiroink.com/character/audio-character/tsukuyomi-chan).
-  * Se reproduce al iniciar la aplicación, al cerrarla y al hacer clic.
+  * La voz predeterminada utiliza audio de [COEIROINK: つくよみちゃん](https://coeiroink.com/character/audio-character/tsukuyomi-chan).
+  * Se reproduce al iniciar y cerrar la aplicación, y al hacer clic.
 
 </details>
 
 <details>
 
 <summary>Configuración de la aplicación mediante archivo de texto</summary>
-Puedes modificar la configuración de la aplicación mediante el archivo application_settings.txt.
+Se pueden modificar las configuraciones de la aplicación mediante el archivo application_settings.txt.
 
 La estructura del archivo de configuración es la siguiente:
 
 ```txt
 [Character]
 ModelPath=default.vrm
+TexturePaths=test.png
 Scale=3
 PositionX=0
 PositionY=0
@@ -98,19 +99,19 @@ QualityLevel=2
   * Modelos
 
 ## Sobre los materiales
-* La animación predeterminada del personaje se ha creado utilizando [“Paquete de datos de animación para VRM ひな形”](https://fumi2kick.booth.pm/items/1655686). Se ha confirmado que puede distribuirse junto con el repositorio.
-* La fuente es [Noto Sans Japanese](https://fonts.google.com/noto/specimen/Noto+Sans+JP?lang=ja_Jpan). Se redistribuye bajo la [Licencia SIL OPEN FONT Version 1.1](https://fonts.google.com/noto/specimen/Noto+Sans+JP/license?lang=ja_Jpan). Los derechos de autor de la fuente pertenecen al autor original (Google).
-* La voz predeterminada se utiliza del audio de [COEIROINK: つくよみちゃん](https://coeiroink.com/character/audio-character/tsukuyomi-chan). Se ha confirmado el uso con COEIROINK de antemano.
-* El ícono de botones utiliza [MingCute](https://github.com/MidraLab/MingCute).
+* Las animaciones predeterminadas del personaje se crearon utilizando [“Animaciones para el juego de muñecas VRM”](https://fumi2kick.booth.pm/items/1655686). Se ha confirmado la distribución de estos en el repositorio.
+* La fuente utilizada es [Noto Sans Japanese](https://fonts.google.com/noto/specimen/Noto+Sans+JP?lang=ja_Jpan). Se redistribuye la fuente Noto Sans JP bajo [SIL OPEN FONT LICENSE Version 1.1](https://fonts.google.com/noto/specimen/Noto+Sans+JP/license?lang=ja_Jpan). El copyright de la fuente pertenece al autor original (Google).
+* La voz predeterminada se utiliza con el audio de [COEIROINK: つくよみちゃん](https://coeiroink.com/character/audio-character/tsukuyomi-chan). Se ha confirmado el uso previamente con COEIROINK.
+* Los íconos de botones utilizan [MingCute](https://github.com/MidraLab/MingCute).
 
-## Créditos del creador
-* Modelos: 「アオゾラ」様
-* BGM: MidraLab (eisuke)
-* Icono de software: やむちゃ様
+## Créditos de los creadores
+* Modelo: “アオゾラ” 
+* BGM: MidraLab(eisuke)
+* Icono del software: やむちゃ
 
 ## Avisos de terceros
 
-Consulta [NOTICE](./NOTICE.md).
+Consulte [NOTICE](./NOTICE.md).
 
 ## patrocinador
 - Luna
