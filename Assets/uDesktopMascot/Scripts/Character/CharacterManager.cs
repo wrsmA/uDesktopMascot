@@ -140,7 +140,7 @@ namespace uDesktopMascot
         {
             try
             {
-                _model = await LoadVRM.LoadModel(_cancellationTokenSource.Token);
+                _model = await LoadCharacterModel.LoadModel(_cancellationTokenSource.Token);
                 
                 await UniTask.SwitchToMainThread();
                 
@@ -255,8 +255,8 @@ namespace uDesktopMascot
             
             if(_modelAnimator == null)
             {
-                Log.Error("モデルにAnimatorが見つかりませんでした。");
-                return;
+                Log.Debug("Animatorが見つからなかったため、新しく追加します。");
+                _modelAnimator = model.AddComponent<Animator>();
             }
 
             // モデルからAvatarを取得して設定
@@ -402,7 +402,7 @@ namespace uDesktopMascot
         /// </summary>
         private void OnDestroy()
         {
-            _characterAnimationController.Dispose();
+            _characterAnimationController?.Dispose();
             _cancellationTokenSource?.Cancel();
             _cancellationTokenSource?.Dispose();
         }
