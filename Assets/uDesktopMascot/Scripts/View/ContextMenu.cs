@@ -30,7 +30,7 @@ namespace uDesktopMascot
         [SerializeField]
         private Button _quitAppButton;
 
-        public event Action<string, CharacterType> FileSelected;
+        public event Action<string, EModelType> FileSelected;
 
         public void SetPosition(Vector2 position)
         {
@@ -57,7 +57,7 @@ namespace uDesktopMascot
                 return;
             }
 
-            FileSelected?.Invoke(dialog[0], CharacterType.VRM);
+            FileSelected?.Invoke(dialog[0], EModelType.VRM);
         }
 
         private void OnClickLoadLive2DButton()
@@ -73,7 +73,7 @@ namespace uDesktopMascot
 
             // Assets/以下のパスに変換
             dialog[0] = dialog[0].Replace(Application.dataPath, "Assets");
-            FileSelected?.Invoke(dialog[0], CharacterType.Live2D);
+            FileSelected?.Invoke(dialog[0], EModelType.Live2D);
         }
 
         private void OnClickQuitApplication()

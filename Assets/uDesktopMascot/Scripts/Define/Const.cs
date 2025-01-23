@@ -19,5 +19,10 @@ namespace uDesktopMascot
 
         // ドラッグを開始するための閾値
         public const float DragThreshold = 5f;
+
+        /// <summary>
+        /// 同時に表示できるキャラクターの最大数
+        /// </summary>
+        public const int MaxCharacterCount = 8;
     }
 }

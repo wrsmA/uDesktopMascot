@@ -9,15 +9,7 @@ namespace uDesktopMascot
     /// </summary>
     public class CommonSettings
     {
-        private string _lastCharacterType;
-
-        public CharacterType LastCharacterType
-        {
-            get => Enum.Parse<CharacterType>(_lastCharacterType);
-            set => _lastCharacterType = value.ToString();
-        }
-
-        public string LastCharacterPath { get; set; } = "";
+        public string LastUseCharacterId { get; set; } = "";
     }
 
     /// <summary>

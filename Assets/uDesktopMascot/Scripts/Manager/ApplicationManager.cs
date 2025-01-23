@@ -5,44 +5,22 @@ using Cysharp.Threading.Tasks;
 
 using Kirurobo;
 
-using uDesktopMascot.Live2D;
-using uDesktopMascot.VRM;
-
-using Unity.Burst.Intrinsics;
 using Unity.Logging;
 using Unity.Logging.Sinks;
 
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 using Logger = Unity.Logging.Logger;
 
 namespace uDesktopMascot
 {
-    public enum CharacterType
-    {
-        Live2D,
-        VRM
-    }
-
-    public class InteractionProcessor
-    {
-
-    }
-
     public class ApplicationManager : SingletonMonoBehaviour<ApplicationManager>
     {
         /// <summary>
         /// ウィンドウコントローラー
         /// </summary>
-        [SerializeField] 
-        private UniWindowController _windowController;
-
-        /// <summary>
-        /// コンテキストメニュー
-        /// </summary>
         [SerializeField]
-        private ContextMenu _contextMenu;
+        private UniWindowController _windowController;
 
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         public CancellationToken CancellationToken => _cancellationTokenSource.Token;
@@ -50,20 +28,11 @@ namespace uDesktopMascot
         private Logger _logger;
         public Logger Logger => _logger;
 
-        private UDMInputActions _input;
-
-        private CharacterControllerBase _characterController;
-
         private bool _isQuitting;
 
         private protected override void Awake()
         {
             base.Awake();
-
-            _input = new UDMInputActions();
-            _input.UI.RightClick.performed += HandleRightClick;
-            _input.UI.Drag.performed += HandleDrag;
-            _input.Enable();
 
             Application.targetFrameRate = 30;
             Application.wantsToQuit += OnWantsToQuit;
@@ -79,76 +48,14 @@ namespace uDesktopMascot
             Log.Logger = _logger;
             Log.Info("アプリケーションを起動しました。");
 
-            _contextMenu.FileSelected += LoadNewCharacter;
-            _contextMenu.gameObject.SetActive(false);
-
-            LoadSetting();
-
-            // PCのスペック応じてQualitySettingsを変更
-            SetQualityLevel();
-
-            // デフォルトのキャラクターをロード
-            LoadNewCharacter("DefaultModel/Vrm/DefaultModel", CharacterType.VRM);
-
-            // 最後に選択されたキャラクターをロード
-            // LoadNewCharacter(ApplicationSettings.Instance.Common.LastCharacterPath, ApplicationSettings.Instance.Common.LastCharacterType);
-        }
-
-        private Vector2 _lastDragPosition;
-        private void HandleDrag(InputAction.CallbackContext context)
-        {
-#if UNITY_EDITOR
-            Log.Debug("HandleDrag: " + context.ReadValue<Vector2>());
-#endif
-            // なでる動作かどうかを判定
-            if (context.ReadValue<Vector2>().y < -0.5f)
-            {
-                
-            }
+            ApplyWindowSettings();
+            ApplyQualityLevel();
         }
 
         /// <summary>
-        /// ロードボタンの処理
+        /// 終了コールバック
         /// </summary>
-        private void LoadNewCharacter(string path, CharacterType type)
-        {
-            DestroyCurrentCharacter();
-
-            CharacterLoaderBase loader = type switch
-            {
-                CharacterType.Live2D => new Live2DCharacterLoader(),
-                CharacterType.VRM    => new VrmCharacterLoader(),
-                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-            };
-            LoadCharacter(loader, path).Forget();
-        }
-
-        private void HandleRightClick(InputAction.CallbackContext context)
-        {
-            // adjust position of context menu to the right click position
-            _contextMenu.SetPosition(Mouse.current.position.ReadValue());
-            _contextMenu.gameObject.SetActive(true);
-        }
-
-        private void DestroyCurrentCharacter()
-        {
-            if (_characterController == null)
-            {
-                return;
-            }
-
-            Destroy(_characterController.gameObject);
-        }
-
-        private async UniTask LoadCharacter(CharacterLoaderBase loader, string path)
-        {
-            _characterController = await loader.LoadCharacterAsync(path);
-            if (_characterController != null)
-            {
-                VoiceController.Instance.PlayStartVoiceAsync(_cancellationTokenSource.Token).Forget();
-            }
-        }
-
+        /// <returns></returns>
         private bool OnWantsToQuit()
         {
             if (_isQuitting)
@@ -162,7 +69,7 @@ namespace uDesktopMascot
         }
 
         /// <summary>
-        ///     アプリケーションが終了するときの処理
+        /// アプリケーションが終了するときの処理
         /// </summary>
         /// <param name="cancellationToken"></param>
         private async UniTaskVoid HandleApplicationQuit(CancellationToken cancellationToken)
@@ -182,9 +89,9 @@ namespace uDesktopMascot
         }
 
         /// <summary>
-        /// 設定を読み込む
+        /// 画面設定を適用
         /// </summary>
-        private void LoadSetting()
+        private void ApplyWindowSettings()
         {
             var systemSettings = ApplicationSettings.Instance.Display;
             _windowController.isTopmost = systemSettings.AlwaysOnTop;
@@ -194,9 +101,9 @@ namespace uDesktopMascot
         }
 
         /// <summary>
-        /// 品質レベルを設定
+        /// 品質レベルを適用
         /// </summary>
-        private void SetQualityLevel()
+        private void ApplyQualityLevel()
         {
             var performanceSettings = ApplicationSettings.Instance.Performance;
 
@@ -242,8 +149,11 @@ namespace uDesktopMascot
         /// <summary>
         /// 実行中のUnity.exeのパスを取得する
         /// </summary>
-        public string GetExePath()
+        public static string GetExePath()
         {
+#if UNITY_EDITOR
+            return Application.dataPath;
+#endif
             return System.Windows.Forms.Application.ExecutablePath;
         }
 
@@ -251,20 +161,9 @@ namespace uDesktopMascot
         /// 実行中のUnity.exeのフォルダパスを取得する
         /// </summary>
         /// <returns></returns>
-        public string GetExeFolderPath()
+        public static string GetExeFolderPath()
         {
             return System.IO.Path.GetDirectoryName(GetExePath());
-        }
-    }
-
-    public class InputHandler
-    {
-        private UDMInputActions _inputActions;
-
-        public InputHandler()
-        {
-            _inputActions = new UDMInputActions();
-            _inputActions.Enable();
         }
     }
 }
