@@ -79,49 +79,6 @@ namespace uDesktopMascot
                 } else
                 {
                     Log.Info("モデルパスが指定されていません。");
-                    // この後、他のモデルファイルを探します
-                }
-
-                // モデルがまだロードされていない場合、他の VRM/GLB/glTF ファイルを検索
-                if (model == null)
-                {
-                    // StreamingAssets フォルダが存在するか確認
-                    if (Directory.Exists(Application.streamingAssetsPath))
-                    {
-                        // 他の VRM/GLB/glTF ファイルを検索
-                        var modelFiles = Directory
-                            .GetFiles(Application.streamingAssetsPath, "*.*", SearchOption.AllDirectories)
-                            .Where(s => s.EndsWith(".vrm", StringComparison.OrdinalIgnoreCase) ||
-                                        s.EndsWith(".glb", StringComparison.OrdinalIgnoreCase) ||
-                                        s.EndsWith(".gltf", StringComparison.OrdinalIgnoreCase))
-                            .ToArray();
-
-                        if (modelFiles.Length > 0)
-                        {
-                            // 最初のモデルファイルを使用
-                            var otherModelPath = modelFiles[0];
-                            Log.Info($"他のモデルファイルを見つけましたのでロードします: {Path.GetFileName(otherModelPath)}");
-                            model = await LoadAndDisplayModel(otherModelPath, cancellationToken);
-                        } else
-                        {
-                            Log.Warning("他の VRM/GLB/glTF ファイルが見つかりません。デフォルトのモデルを読み込みます。");
-                            // デフォルトのモデルをロード
-                            model = LoadDefaultModel();
-                        }
-                    } else
-                    {
-                        Log.Warning("StreamingAssets フォルダが見つかりません。デフォルトのモデルを読み込みます。");
-                        // デフォルトのモデルをロード
-                        model = LoadDefaultModel();
-                    }
-                }
-
-                if (model != null)
-                {
-                    Log.Info("モデルのロードと表示が完了しました。");
-                } else
-                {
-                    Log.Error("モデルのロードに失敗しました。");
                 }
 
                 return model;
@@ -135,7 +92,7 @@ namespace uDesktopMascot
         /// <summary>
         ///     デフォルトのVRMモデルをロードして表示する
         /// </summary>
-        private static GameObject LoadDefaultModel()
+        public static GameObject LoadDefaultModel()
         {
             // ResourcesフォルダからPrefabをロード
             var prefab = Resources.Load<GameObject>(DefaultVrmFileName);

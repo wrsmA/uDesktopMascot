@@ -39,21 +39,41 @@ namespace uDesktopMascot
             // モデルの種類を判定
             var modelType = GetModelType(characterSettings.ModelPath);
 
-            switch (modelType)
+            try
             {
-                case ModelType.FBX:
-                    // FBXモデルの読み込み
-                    model = await LoadFBX.LoadModelAsync(characterSettings.ModelPath, characterSettings.TexturePaths, cancellationToken);
-                    break;
-                case ModelType.VRM:
-                case ModelType.GLB:
-                case ModelType.GLTF:
-                    // VRM、GLB、GLTFモデルの読み込み
-                    model = await LoadVRM.LoadModelAsync(characterSettings.ModelPath, cancellationToken);
-                    break;
-                default:
-                    Log.Error("サポートされていないモデル形式です: {0}", characterSettings.ModelPath);
+                switch (modelType)
+                {
+                    case ModelType.FBX:
+                        // FBXモデルの読み込み
+                        model = await LoadFBX.LoadModelAsync(characterSettings.ModelPath,characterSettings.TexturePaths, cancellationToken);
+                        break;
+                    case ModelType.VRM:
+                    case ModelType.GLB:
+                    case ModelType.GLTF:
+                        // VRM、GLB、GLTFモデルの読み込み
+                        model = await LoadVRM.LoadModelAsync(characterSettings.ModelPath, cancellationToken);
+                        break;
+                    default:
+                        Log.Error("サポートされていないモデル形式です: {0}", characterSettings.ModelPath);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("モデルのロード中にエラーが発生しました: {0}", ex.Message);
+            }
+
+            // モデルのロードが失敗した場合、デフォルトモデルをロードする
+            if (model == null)
+            {
+                Log.Warning("指定されたモデルのロードに失敗したため、デフォルトモデルをロードします。");
+                model = LoadVRM.LoadDefaultModel();
+
+                if (model == null)
+                {
+                    Log.Error("デフォルトモデルのロードにも失敗しました。");
                     return null;
+                }
             }
 
             // シェーダーをlilToonに置き換える

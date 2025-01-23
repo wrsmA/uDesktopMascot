@@ -255,8 +255,8 @@ namespace uDesktopMascot
             
             if(_modelAnimator == null)
             {
-                Log.Error("モデルにAnimatorが見つかりませんでした。");
-                return;
+                Log.Debug("Animatorが見つからなかったため、新しく追加します。");
+                _modelAnimator = model.AddComponent<Animator>();
             }
 
             // モデルからAvatarを取得して設定
