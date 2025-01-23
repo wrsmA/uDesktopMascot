@@ -31,6 +31,8 @@ namespace uDesktopMascot
 
             // view
             _view.ModelFileSelected += HandleModelFileSelected;
+            _view.LoadExistsButtonClicked += HandleExistModelsOpen;
+            _view.ExistModelSelected += HandleExistModelSelected;
 
             var lastUseCharacterData = _model.LoadLastUseCharacterData();
             _model.LoadCharacterAsync(lastUseCharacterData.path, lastUseCharacterData.type).Forget();
@@ -47,6 +49,12 @@ namespace uDesktopMascot
             _view.AddCharacter(character);
         }
 
+        private void HandleExistModelSelected(int index)
+        {
+            var data = _model.GetExistCharacters()[index];
+            _model.LoadCharacterAsync(data.ModelPath, data.ModelType).Forget();
+        }
+
         private void HandleRightClick(InputAction.CallbackContext context)
         {
             _view.OpenContextMenuAtPosition(Mouse.current.position.ReadValue());
@@ -55,6 +63,12 @@ namespace uDesktopMascot
         private void HandleModelFileSelected(string path, EModelType type)
         {
             _model.LoadCharacterAsync(path, type).Forget();
+        }
+
+        private void HandleExistModelsOpen()
+        {
+            var characters = _model.GetExistCharacters();
+            _view.OpenExistModelsMenuAtPosition(Mouse.current.position.ReadValue(), characters);
         }
     }
 }

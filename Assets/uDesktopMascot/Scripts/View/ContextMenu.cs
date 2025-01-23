@@ -28,20 +28,20 @@ namespace uDesktopMascot
         private Button _loadLive2DButton;
 
         [SerializeField]
+        private Button _loadExistsButton;
+
+        [SerializeField]
         private Button _quitAppButton;
 
         public event Action<string, EModelType> FileSelected;
-
-        public void SetPosition(Vector2 position)
-        {
-            _pivot.position = position;
-        }
+        public event Action LoadExistsButtonClicked;
 
         private void Awake()
         {
             _closeButton.onClick.AddListener(() => gameObject.SetActive(false));
             _loadVrmButton.onClick.AddListener(OnClickLoadVrmButton);
             _loadLive2DButton.onClick.AddListener(OnClickLoadLive2DButton);
+            _loadExistsButton.onClick.AddListener(() => LoadExistsButtonClicked?.Invoke());
             _quitAppButton.onClick.AddListener(OnClickQuitApplication);
 
 #if !ENABLE_LIVE2D
@@ -83,6 +83,11 @@ namespace uDesktopMascot
 #else
             Application.Quit();
 #endif
+        }
+
+        public void SetPosition(Vector2 position)
+        {
+            _pivot.position = position;
         }
     }
 }

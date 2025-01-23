@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
 using Cysharp.Threading.Tasks;
+
+using NUnit.Framework;
 
 using uDesktopMascot.Live2D;
 using uDesktopMascot.VRM;
@@ -83,6 +86,11 @@ namespace uDesktopMascot
         {
             DataCenter.Instance.CharacterDataStorage.LastUseCharacterId = id;
             DataCenter.Instance.Save();
+        }
+
+        public List<CharacterData> GetExistCharacters()
+        {
+            return DataCenter.Instance.CharacterDataStorage.Characters;
         }
     }
 }
