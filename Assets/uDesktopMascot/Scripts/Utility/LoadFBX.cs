@@ -40,7 +40,6 @@ namespace uDesktopMascot
                 return null;
             }
 
-
             // FBXファイルのディレクトリを取得
             string fbxDirectory = Path.GetDirectoryName(fullPath);
 
@@ -122,19 +121,18 @@ namespace uDesktopMascot
                 unityMesh.RecalculateBounds();
 
                 meshFilter.mesh = unityMesh;
-
-                // MToon10 シェーダーを使用してマテリアルを作成
-                Shader mtoonShader = Shader.Find("VRM10/MToon10");
-                if (mtoonShader == null)
+                
+                Shader lilToon = Shader.Find("Hidden/lilToonCutout");
+                if (lilToon == null)
                 {
                     Log.Error("[LoadFBX] MToon10 シェーダーが見つかりません。"
                         + "UniVRM パッケージが正しくインポートされているか確認してください。");
 
                     // フォールバックとして Standard シェーダーを使用
-                    mtoonShader = Shader.Find("Standard");
+                    lilToon = Shader.Find("Universal Render Pipeline/Lit");
                 }
 
-                UnityEngineMaterial material = new UnityEngineMaterial(mtoonShader);
+                UnityEngineMaterial material = new UnityEngineMaterial(lilToon);
 
                 // カラーを設定
                 material.SetColor("_Color", meshData.Material.Color);
