@@ -6,6 +6,8 @@ on:
     branches:
       - main
     types: [opened, synchronize, reopened]
+  schedule:
+    - cron: '0 0 * * *'  # 毎日UTCで午前0時に実行
 
 jobs:
   check-branch:
