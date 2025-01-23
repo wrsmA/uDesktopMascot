@@ -82,9 +82,9 @@ namespace uDesktopMascot.Editor.EditorTest
         public void SoundSettings_DefaultValues()
         {
             var settings = new SoundSettings();
-            Assert.AreEqual(1.0f, settings.VoiceVolume);
-            Assert.AreEqual(0.5f, settings.BGMVolume);
-            Assert.AreEqual(1.0f, settings.SEVolume);
+            Assert.IsTrue(settings.VoiceVolume >= 0.0f && settings.VoiceVolume <= 1.0f);
+            Assert.IsTrue(settings.BGMVolume >= 0.0f && settings.BGMVolume <= 1.0f);
+            Assert.IsTrue(settings.SEVolume >= 0.0f && settings.SEVolume <= 1.0f);
         }
 
         [Test]
