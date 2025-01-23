@@ -172,6 +172,18 @@ jobs:
           Compress-Archive -Path "uDesktopMascot\*" -DestinationPath "${{ steps.build_info.outputs.artifact_name }}.zip"
           cd ..
           Move-Item "build\${{ steps.build_info.outputs.artifact_name }}.zip" "${{ steps.build_info.outputs.artifact_name }}.zip"
+          
+      # フォルダ名の変更とZIP解凍
+      - name: フォルダ名を変更し、macOSビルド成果物を解凍
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          cd build
+          mv "${{ matrix.targetPlatform }}" "uDesktopMascot"
+          cd uDesktopMascot
+          unzip StandaloneOSX.zip
+          rm StandaloneOSX.zip
+          cd ../..
 
       # macOS/Linuxランナー用のステップ
       - name: ビルド成果物を圧縮して名前を変更 (macOS/Linux)
