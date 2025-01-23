@@ -302,7 +302,13 @@ namespace uDesktopMascot
                 {
                     avatar.name = model.name + "_Avatar";
                     return avatar;
+                } else
+                {
+                    Log.Warning("Humanoid アバターの生成に失敗しました。");
                 }
+            } else
+            {
+                Log.Warning("SkinnedMeshRenderer が見つからなかったため、Avatar を生成できませんでした。");
             }
 
             return null;
