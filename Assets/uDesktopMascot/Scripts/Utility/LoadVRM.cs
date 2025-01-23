@@ -202,7 +202,7 @@ namespace uDesktopMascot
 
             // シェーダーをlilToonに置き換える
             bool shaderReplaceSuccess = ReplaceShadersWithLilToon(model);
-
+            
             if (!shaderReplaceSuccess)
             {
                 Log.Warning("シェーダーの置き換えに失敗したため、デフォルトのシェーダーを使用します。");
@@ -242,13 +242,11 @@ namespace uDesktopMascot
                 var model = gltfInstance.Root;
 
                 return model;
-            }
-            catch (OperationCanceledException)
+            } catch (OperationCanceledException)
             {
                 Log.Warning("モデルのロードがキャンセルされました。");
                 return null;
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 Log.Error($"モデルのロード中にエラーが発生しました: {e.Message}");
                 return null;
@@ -264,29 +262,34 @@ namespace uDesktopMascot
         {
             try
             {
-                // lilToonの半透明シェーダーを取得
+                // lilToon の各バリアントのシェーダーを取得
+                var lilToonCutoutShader = Shader.Find("Hidden/lilToonCutout");
                 var lilToonTransparentShader = Shader.Find("Hidden/lilToonTransparent");
 
-                if (lilToonTransparentShader == null)
+                if (lilToonCutoutShader == null || lilToonTransparentShader == null)
                 {
-                    Log.Warning("lilToonのTransparentシェーダーが見つかりません。シェーダー名を確認してください。");
+                    Log.Warning("lilToon シェーダーの一部が見つかりません。プロジェクトに lilToon シェーダーが含まれており、正しくインストールされていることを確認してください。");
                     return false;
                 }
 
-                // すべてのRendererを取得
+                // すべての Renderer を取得
                 var renderers = model.GetComponentsInChildren<Renderer>(true);
 
                 foreach (var renderer in renderers)
                 {
-                    // 各Rendererのマテリアルを取得
+                    // 各 Renderer のマテリアルを取得
                     var materials = renderer.materials;
 
                     foreach (var material in materials)
                     {
-                        // シェーダーをlilToonの半透明シェーダーに置き換える
-                        material.shader = lilToonTransparentShader;
-
-                        // 必要に応じてプロパティを設定
+                        if (material == null || material.shader == null)
+                        {
+                            continue;
+                        }
+                        
+                        // シェーダーを置き換え
+                        material.shader = lilToonCutoutShader;
+                        
                         material.SetFloat("_TransparentMode", 2); // 0: Opaque, 1: Cutout, 2: Transparent, etc.
                         material.SetFloat("_OutlineEnable", 1); // アウトラインを有効化
                     }
