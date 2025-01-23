@@ -402,7 +402,7 @@ namespace uDesktopMascot
         /// </summary>
         private void OnDestroy()
         {
-            _characterAnimationController.Dispose();
+            _characterAnimationController?.Dispose();
             _cancellationTokenSource?.Cancel();
             _cancellationTokenSource?.Dispose();
         }

@@ -200,14 +200,6 @@ namespace uDesktopMascot
                 return null;
             }
 
-            // シェーダーをlilToonに置き換える
-            bool shaderReplaceSuccess = ReplaceShadersWithLilToon(model);
-            
-            if (!shaderReplaceSuccess)
-            {
-                Log.Warning("シェーダーの置き換えに失敗したため、デフォルトのシェーダーを使用します。");
-            }
-
             Log.Info("モデルのロードと表示が完了しました: " + path);
 
             return model;
@@ -250,57 +242,6 @@ namespace uDesktopMascot
             {
                 Log.Error($"モデルのロード中にエラーが発生しました: {e.Message}");
                 return null;
-            }
-        }
-
-        /// <summary>
-        /// モデルのシェーダーをlilToonに置き換える
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        private static bool ReplaceShadersWithLilToon(GameObject model)
-        {
-            try
-            {
-                // lilToon の各バリアントのシェーダーを取得
-                var lilToonCutoutShader = Shader.Find("Hidden/lilToonCutout");
-                var lilToonTransparentShader = Shader.Find("Hidden/lilToonTransparent");
-
-                if (lilToonCutoutShader == null || lilToonTransparentShader == null)
-                {
-                    Log.Warning("lilToon シェーダーの一部が見つかりません。プロジェクトに lilToon シェーダーが含まれており、正しくインストールされていることを確認してください。");
-                    return false;
-                }
-
-                // すべての Renderer を取得
-                var renderers = model.GetComponentsInChildren<Renderer>(true);
-
-                foreach (var renderer in renderers)
-                {
-                    // 各 Renderer のマテリアルを取得
-                    var materials = renderer.materials;
-
-                    foreach (var material in materials)
-                    {
-                        if (material == null || material.shader == null)
-                        {
-                            continue;
-                        }
-                        
-                        // シェーダーを置き換え
-                        material.shader = lilToonCutoutShader;
-                        
-                        material.SetFloat("_TransparentMode", 2); // 0: Opaque, 1: Cutout, 2: Transparent, etc.
-                        material.SetFloat("_OutlineEnable", 1); // アウトラインを有効化
-                    }
-                }
-
-                Log.Info("シェーダーの置き換えが完了しました。");
-                return true;
-            } catch (Exception e)
-            {
-                Log.Error($"シェーダーの置き換え中にエラーが発生しました: {e.Message}");
-                return false;
             }
         }
     }

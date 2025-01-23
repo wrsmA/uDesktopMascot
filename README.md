@@ -64,6 +64,7 @@ application_settings.txtファイルにより、アプリケーションの設�
 ```txt
 [Character]
 ModelPath=default.vrm
+TexturePaths=test.png
 Scale=3
 PositionX=0
 PositionY=0
