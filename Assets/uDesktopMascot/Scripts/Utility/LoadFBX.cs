@@ -318,7 +318,7 @@ namespace uDesktopMascot
             List<string> searchDirectories = new List<string>
             {
                 fbxDirectory, // FBXファイルのディレクトリ
-                Path.Combine(fbxDirectory, "Textures"), // FBXファイルのディレクトリ内の "Textures" フォルダ
+                Path.Combine(fbxDirectory, "textures"), // FBXファイルのディレクトリ内の "textures" フォルダ
                 Application.streamingAssetsPath // StreamingAssets フォルダ
             };
 
@@ -347,24 +347,6 @@ namespace uDesktopMascot
         }
 
         /// <summary>
-        /// パスを解決してフルパスを返す
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        private static string ResolvePath(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                return null;
-            }
-
-            var fullPath = Path.IsPathRooted(path) ? path :
-                Path.Combine(Application.streamingAssetsPath, path);
-
-            return fullPath;
-        }
-
-        /// <summary>
         /// ファイルからすべてのバイトを非同期で読み込む
         /// </summary>
         private static async UniTask<byte[]> ReadAllBytesAsync(string path)
@@ -376,36 +358,34 @@ namespace uDesktopMascot
             }
 
             // Unity 2017 以前の場合
-            using (FileStream sourceStream = new FileStream(
+            await using FileStream sourceStream = new FileStream(
                 path, FileMode.Open, FileAccess.Read, FileShare.Read,
-                bufferSize: 4096, useAsync: true))
+                bufferSize: 4096, useAsync: true);
+            long fileLength = sourceStream.Length;
+            byte[] result = new byte[fileLength];
+
+            int totalBytesRead = 0;
+
+            while (totalBytesRead < fileLength)
             {
-                long fileLength = sourceStream.Length;
-                byte[] result = new byte[fileLength];
-
-                int totalBytesRead = 0;
-
-                while (totalBytesRead < fileLength)
+                var bytesRead = await sourceStream.ReadAsync(
+                    result, totalBytesRead, 
+                    (int)(fileLength - totalBytesRead));
+                if (bytesRead == 0)
                 {
-                    var bytesRead = await sourceStream.ReadAsync(
-                        result, totalBytesRead, 
-                        (int)(fileLength - totalBytesRead));
-                    if (bytesRead == 0)
-                    {
-                        break; // ストリームの終端に達した場合
-                    }
-
-                    totalBytesRead += bytesRead;
+                    break; // ストリームの終端に達した場合
                 }
 
-                if (totalBytesRead != fileLength)
-                {
-                    Log.Warning("[LoadFBX] 予期しないEOFによりファイルの読み込みが完了しませんでした: {0}", path);
-                    // 必要に応じて、部分的に読み込んだデータを処理するか、エラーを返す
-                }
-
-                return result;
+                totalBytesRead += bytesRead;
             }
+
+            if (totalBytesRead != fileLength)
+            {
+                Log.Warning("[LoadFBX] 予期しないEOFによりファイルの読み込みが完了しませんでした: {0}", path);
+                // 必要に応じて、部分的に読み込んだデータを処理するか、エラーを返す
+            }
+
+            return result;
         }
 
         /// <summary>
