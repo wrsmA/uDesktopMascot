@@ -12,6 +12,10 @@ namespace uDesktopMascot
         public void OnDrag(InputAction.CallbackContext context)
         {
             // なでる動作かどうかを判定
+            if (context.started)
+            {
+                _nadeTime = 0.0f;
+            }
             if (context.performed)
             {
                 _nadeTime += Time.deltaTime;
@@ -20,17 +24,16 @@ namespace uDesktopMascot
             {
                 _nadeTime = 0.0f;
             }
-            Log.Info("なでる時間: " + _nadeTime);
+            if (_nadeTime > 1.0f)
+            {
+                Log.Info("なでなで");
+                _nadeTime = 0.0f;
+            }
         }
 
-        public void OnTriggerEnter2D(Collider2D collision)
+        public void ResetNadeTime()
         {
-            Log.Info("Enter2D");
-        }
-
-        public void OnTriggerExit2D(Collider2D collision)
-        {
-            Log.Info("Exit2D");
+            _nadeTime = 0.0f;
         }
     }
 }
