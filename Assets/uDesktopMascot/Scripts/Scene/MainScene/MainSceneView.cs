@@ -27,7 +27,10 @@ namespace uDesktopMascot
         /// </summary>
         private List<CharacterControllerBase> _characters = new(Const.MaxCharacterCount);
 
-        private RaycastHit2D[] _hits = new RaycastHit2D[Const.MaxCharacterCount];
+        /// <summary>
+        /// インタラクション処理用クラス
+        /// </summary>
+        private InteractionEngine _interaction = new InteractionEngine();
 
         public event Action<string, EModelType> ModelFileSelected;
         public event Action LoadExistsButtonClicked;
@@ -35,6 +38,8 @@ namespace uDesktopMascot
 
         private void Awake()
         {
+            _interaction.SetLayerMask(LayerMask.GetMask("Default"));
+
             _contextMenu.FileSelected += (path, type) => ModelFileSelected?.Invoke(path, type);
             _contextMenu.LoadExistsButtonClicked += () => LoadExistsButtonClicked?.Invoke();
             _contextMenu.gameObject.SetActive(false);
@@ -97,47 +102,8 @@ namespace uDesktopMascot
             _characters.Clear();
         }
 
-        // TODO: インタラクション系の処理は独立モジュールにする
-        private CollisionInteraction[] _lastInteraction = new CollisionInteraction[Const.MaxCharacterCount];
+        public void ProcessDrag(in InputAction.CallbackContext context) => _interaction.ProcessDrag(context);
 
-        /// <summary>
-        /// ドラッグを処理する
-        /// </summary>
-        /// <param name="context"></param>
-        /// <exception cref="NotImplementedException"></exception>
-        public void ProcessDrag(InputAction.CallbackContext context)
-        {
-            // マウスのスクリーン座標をワールド座標に変換
-            Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-
-            // Raycastを発射
-            var hitCount = Physics2D.RaycastNonAlloc(mousePosition, Vector2.zero, _hits, 0f, LayerMask.GetMask("Default"));
-
-            // デバッグ用のRayをシーンビューに表示（マウス位置）
-            Debug.DrawRay(mousePosition, Vector2.up * 0.1f, Color.green);
-
-            if (hitCount > 0)
-            {
-                for (var i = 0; i < hitCount; ++i)
-                {
-                    if (_hits[i].collider.gameObject.TryGetComponent<CollisionInteraction>(out var interaction))
-                    {
-                        interaction.OnDrag(context);
-                        _lastInteraction[i] = interaction;
-                    }
-                }
-            } 
-            else
-            {
-                for (var i = 0; i < Const.MaxCharacterCount; ++i)
-                {
-                    if (_lastInteraction[i] != null)
-                    {
-                        _lastInteraction[i].ResetNadeTime();
-                        _lastInteraction[i] = null;
-                    }
-                }
-            }
-        }
+        internal void ProcessClick(InputAction.CallbackContext context) => _interaction.ProcessClick(context);
     }
 }

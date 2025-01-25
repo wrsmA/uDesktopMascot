@@ -100,7 +100,7 @@ namespace uDesktopMascot
         /// <exception cref="NotImplementedException"></exception>
         private void HandleClick(InputAction.CallbackContext context)
         {
-            
+            _view.ProcessClick(context);
         }
 
         /// <summary>

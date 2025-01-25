@@ -31,6 +31,11 @@ namespace uDesktopMascot
             }
         }
 
+        public void OnClick(InputAction.CallbackContext context)
+        {
+            Log.Info("つつき");
+        }
+
         public void ResetNadeTime()
         {
             _nadeTime = 0.0f;
