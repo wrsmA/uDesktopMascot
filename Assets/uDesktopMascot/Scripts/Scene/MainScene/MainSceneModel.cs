@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 using Cysharp.Threading.Tasks;
-
-using NUnit.Framework;
 
 using uDesktopMascot.Live2D;
 using uDesktopMascot.VRM;
@@ -36,16 +33,19 @@ namespace uDesktopMascot
             var character = await loader.LoadCharacterAsync(path);
             if (character != null)
             {
-                var data = new CharacterData(
+                if (!DataCenter.Instance.CharacterDataStorage.Characters.Any(r => r.ModelPath == path))
+                {
+                    var data = new CharacterData(
                     Guid.NewGuid().ToString(),
-                    "",
-                    type,
-                    path,
-                    1.0f
-                );
-                DataCenter.Instance.CharacterDataStorage.Characters.Add(data);
-                DataCenter.Instance.CharacterDataStorage.LastUseCharacterId = data.Id;
-                DataCenter.Instance.Save();
+                        "",
+                        type,
+                        path,
+                        1.0f
+                    );
+                    DataCenter.Instance.CharacterDataStorage.Characters.Add(data);
+                    DataCenter.Instance.CharacterDataStorage.LastUseCharacterId = data.Id;
+                    DataCenter.Instance.Save();
+                }
 
                 CharacterLoaded?.Invoke(character);
             }
@@ -69,9 +69,6 @@ namespace uDesktopMascot
                     "DefaultModel/Vrm/DefaultModel",
                     1.0f
                 );
-                DataCenter.Instance.CharacterDataStorage.Characters.Add(data);
-                DataCenter.Instance.CharacterDataStorage.LastUseCharacterId = data.Id;
-                DataCenter.Instance.Save();
             }
             return (data.ModelPath, data.ModelType);
         }
