@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows.Forms;
 
 using Cysharp.Threading.Tasks;
 
@@ -24,6 +23,9 @@ namespace uDesktopMascot
 
             // input
             _input.UI.RightClick.performed += HandleRightClick;
+            _input.UI.Click.performed += HandleClick;
+            _input.UI.Drag.performed += HandleDrag;
+
             _input.Enable();
 
             // model
@@ -44,31 +46,71 @@ namespace uDesktopMascot
             _model.Dispose();
         }
 
+        /// <summary>
+        /// キャラクターがロードされたときの処理
+        /// </summary>
+        /// <param name="character"></param>
         private void HandleCharacterLoaded(CharacterControllerBase character)
         {
             _view.AddCharacter(character);
         }
 
+        /// <summary>
+        /// 既存のモデルが選択されたときの処理
+        /// </summary>
+        /// <param name="index"></param>
         private void HandleExistModelSelected(int index)
         {
             var data = _model.GetExistCharacters()[index];
             _model.LoadCharacterAsync(data.ModelPath, data.ModelType).Forget();
         }
 
-        private void HandleRightClick(InputAction.CallbackContext context)
-        {
-            _view.OpenContextMenuAtPosition(Mouse.current.position.ReadValue());
-        }
-
+        /// <summary>
+        /// モデルファイルが選択されたときの処理
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="type"></param>
         private void HandleModelFileSelected(string path, EModelType type)
         {
             _model.LoadCharacterAsync(path, type).Forget();
         }
 
+        /// <summary>
+        /// 既存のモデルメニューを開く
+        /// </summary>
         private void HandleExistModelsOpen()
         {
             var characters = _model.GetExistCharacters();
             _view.OpenExistModelsMenuAtPosition(Mouse.current.position.ReadValue(), characters);
+        }
+
+        /// <summary>
+        /// 右クリックイベントを処理する
+        /// </summary>
+        /// <param name="context"></param>
+        private void HandleRightClick(InputAction.CallbackContext context)
+        {
+            _view.OpenContextMenuAtPosition(Mouse.current.position.ReadValue());
+        }
+
+        /// <summary>
+        /// クリックイベントを処理する
+        /// </summary>
+        /// <param name="context"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void HandleClick(InputAction.CallbackContext context)
+        {
+            _view.ProcessClick(context);
+        }
+
+        /// <summary>
+        /// ドラッグイベントを処理する
+        /// </summary>
+        /// <param name="context"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void HandleDrag(InputAction.CallbackContext context)
+        {
+            _view.ProcessDrag(context);
         }
     }
 }
