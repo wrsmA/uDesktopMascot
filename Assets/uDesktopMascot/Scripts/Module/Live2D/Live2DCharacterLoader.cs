@@ -51,6 +51,13 @@ namespace uDesktopMascot.Live2D
                 }
 
                 container.transform.localScale = Vector3.one * 11.0f;
+
+                var Live2DMotionConverter = new Live2DMotionConverter();
+                GameObject live2dObject = container.transform.GetChild(0).gameObject;
+
+                var animation = await Live2DMotionConverter.AttachIdleMotion(path, live2dObject,model3Json);
+                
+
                 return controller;
 
             } 
