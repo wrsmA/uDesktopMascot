@@ -58,7 +58,8 @@ namespace uDesktopMascot
 
                 return (dpiScaleX + dpiScaleY) / 2.0f;
 
-            } finally
+            } 
+            finally
             {
                 ReleaseDC(IntPtr.Zero, hdc);
             }
@@ -74,7 +75,8 @@ namespace uDesktopMascot
             {
                 // 静的なコールバックメソッドを使用し、lParam に GCHandle のポインタを渡す
                 WindowsAPI.EnumWindows(EnumWindowsCallback, GCHandle.ToIntPtr(handle));
-            } finally
+            } 
+            finally
             {
                 // GCHandle を解放
                 handle.Free();

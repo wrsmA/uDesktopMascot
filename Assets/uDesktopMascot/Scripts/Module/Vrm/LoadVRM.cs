@@ -74,12 +74,14 @@ namespace uDesktopMascot.VRM
                         Log.Info($"指定されたモデルファイルをロードします: {modelPath}");
                         // 指定されたモデルをロード
                         model = await LoadAndDisplayModel(fullModelPath, cancellationToken);
-                    } else
+                    } 
+                    else
                     {
                         Log.Warning($"指定されたモデルファイルが見つかりませんでした: {modelPath}");
                         // この後、他のモデルファイルを探します
                     }
-                } else
+                } 
+                else
                 {
                     Log.Info("モデルパスが指定されていません。");
                     // この後、他のモデルファイルを探します
@@ -105,13 +107,15 @@ namespace uDesktopMascot.VRM
                             var otherModelPath = modelFiles[0];
                             Log.Info($"他のモデルファイルを見つけましたのでロードします: {Path.GetFileName(otherModelPath)}");
                             model = await LoadAndDisplayModel(otherModelPath, cancellationToken);
-                        } else
+                        } 
+                        else
                         {
                             Log.Warning("他の VRM/GLB/glTF ファイルが見つかりません。デフォルトのモデルを読み込みます。");
                             // デフォルトのモデルをロード
                             model = LoadDefaultModel();
                         }
-                    } else
+                    } 
+                    else
                     {
                         Log.Warning("StreamingAssets フォルダが見つかりません。デフォルトのモデルを読み込みます。");
                         // デフォルトのモデルをロード
@@ -122,13 +126,15 @@ namespace uDesktopMascot.VRM
                 if (model != null)
                 {
                     Log.Info("モデルのロードと表示が完了しました。");
-                } else
+                } 
+                else
                 {
                     Log.Error("モデルのロードに失敗しました。");
                 }
 
                 return model;
-            } catch (Exception e)
+            } 
+            catch (Exception e)
             {
                 Log.Error($"モデルの読み込みまたは表示中にエラーが発生しました: {e.Message}");
                 return null;
@@ -297,7 +303,8 @@ namespace uDesktopMascot.VRM
 
                 Log.Info("シェーダーの置き換えが完了しました。");
                 return true;
-            } catch (Exception e)
+            } 
+            catch (Exception e)
             {
                 Log.Error($"シェーダーの置き換え中にエラーが発生しました: {e.Message}");
                 return false;

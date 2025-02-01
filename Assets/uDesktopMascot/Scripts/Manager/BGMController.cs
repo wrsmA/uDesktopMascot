@@ -87,7 +87,8 @@ namespace uDesktopMascot
                     if (count == 0)
                     {
                         Log.Warning("BGMがロードされませんでした。フォルダに有効なオーディオファイルがありません。");
-                    } else
+                    } 
+                    else
                     {
                         Log.Debug("BGMを {0} 件ロードしました。", count);
                     }

@@ -67,7 +67,8 @@ namespace uDesktopMascot
                                 www.result == UnityWebRequest.Result.ProtocolError)
                             {
                                 Log.Warning("Failed to load audio clip: {0}\nError: {1}", filePath, www.error);
-                            } else
+                            } 
+                            else
                             {
                                 var clip = DownloadHandlerAudioClip.GetContent(www);
                                 if (clip != null)
@@ -75,7 +76,8 @@ namespace uDesktopMascot
                                     soundList.Add(clip);
                                 }
                             }
-                        } catch (OperationCanceledException)
+                        } 
+                        catch (OperationCanceledException)
                         {
                             // キャンセル時の処理（必要に応じて）
                             Log.Debug("ロードがキャンセルされました: {0}", filePath);
@@ -86,7 +88,8 @@ namespace uDesktopMascot
 
                 // ロード完了時のコールバックを呼び出す
                 onLoaded?.Invoke(soundList.Count);
-            } else
+            } 
+            else
             {
                 // フォルダが存在しない場合
                 onDirectoryNotFound?.Invoke();

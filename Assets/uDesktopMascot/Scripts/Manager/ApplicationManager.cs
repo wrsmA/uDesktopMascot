@@ -123,7 +123,8 @@ namespace uDesktopMascot
                 // 設定ファイルを更新
                 ApplicationSettings.Instance.SaveSettings();
                 Log.Info("動的に調整した品質レベルを設定ファイルに保存しました。");
-            } else
+            } 
+            else
             {
                 // 有効な場合、設定ファイルの値を使用
                 QualitySettings.SetQualityLevel(qualityLevel, true);
@@ -135,7 +136,8 @@ namespace uDesktopMascot
             {
                 Application.targetFrameRate = performanceSettings.TargetFrameRate;
                 Log.Info("ターゲットフレームレートを " + Application.targetFrameRate + " に設定しました。");
-            } else
+            }
+            else
             {
                 // 無効な場合、デフォルト値を設定し、設定ファイルを更新
                 Application.targetFrameRate = 60; // デフォルト値

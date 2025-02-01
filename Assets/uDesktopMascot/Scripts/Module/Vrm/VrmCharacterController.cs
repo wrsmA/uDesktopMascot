@@ -152,7 +152,8 @@ namespace uDesktopMascot.VRM
                 // ドラッグ中はハンギングモーション（ぶら下がりモーション）
                 _modelAnimator.SetBool(Const.IsSitting, false);
                 _modelAnimator.SetBool(Const.IsDragging, true);
-            } else
+            } 
+            else
             {
                 _modelAnimator.SetBool(Const.IsDragging, false);
                 // 座りモーションまたは立ちモーションに切り替え
@@ -187,11 +188,13 @@ namespace uDesktopMascot.VRM
                     // モデルがクリックされた
                     _isDraggingModel = true;
                     VoiceController.Instance.PlayHoldVoice();
-                } else
+                } 
+                else
                 {
                     _isDraggingModel = false;
                 }
-            } else
+            } 
+            else
             {
                 _isDraggingModel = false;
             }

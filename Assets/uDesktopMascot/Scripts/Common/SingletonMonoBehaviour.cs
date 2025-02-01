@@ -27,7 +27,8 @@ namespace uDesktopMascot
                     if (_instance == null)
                     {
                         Log.Warning(typeof(T) + "SingletonMonoBehaviour is nothing");
-                    } else
+                    } 
+                    else
                     {
                         DontDestroyOnLoad(_instance.gameObject);
                     }
@@ -43,7 +44,8 @@ namespace uDesktopMascot
             {
                 _instance = this as T;
                 DontDestroyOnLoad(gameObject);
-            } else if (_instance != this)
+            } 
+            else if (_instance != this)
             {
                 Destroy(gameObject);
             }
